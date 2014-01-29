@@ -3,8 +3,36 @@ parallyze
 
 software to analyze parallel genome evolution
 
+## Algorithm design
 
-NOTES
+###Case 1: Genomes from evolution experiment. Assume all independent, i.e. star phylogeny.
+
+Count all mutations (x_1 + x_2 + ... + x_n), and turn into 4x4 matrix.
+
+"Sort" reference genome positions by base. represent as (base, position), e.g. ('A', 3461000)
+
+    for 1 to N replicates:
+        for 1 to n genomes:
+          draw x_i mutations from the mutation matrix, and drop onto reference genome.
+
+
+###Case 2: Simulating an evolution experiment (constant u, i.e. no mutators)
+
+Start with a 4x4 matrix and set lambda = mean number of mutations per genome, and n = number of genomes.
+
+    for 1 to N replicates:
+      for 1 to n:
+        draw x_i from Poisson(lambda)
+        drop x_i onto reference genome
+
+###Datasets for Testing
+
+
+* 40K Clones from LTEE
+* Bennett temperature-evolved genomes (doi:10.1126/science.1212986)
+* Lieberman et al. Burkholderia outbreak isolates (doi:10.1038/ng.997)
+
+##NOTES
 
 Rich is thinking about a set of tools where
 one idea is doing a statistical test for parallelism.
