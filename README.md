@@ -40,8 +40,7 @@ Start with a 4x4 matrix and set lambda = mean number of mutations per genome, an
         draw x_i from Poisson(lambda)
         drop x_i onto reference genome
         
-###Procedure 4: Genomes from multiple isolates from the same experimental evolution population. 
-           (perhaps clinical or epidemiological isolates in future).
+###Procedure 4: Genomes from multiple isolates from the same experimental evolution population.
 
 1) Infer phylogeny
 2) Infer genotypes of all internal nodes by "using parsimonious assumptions" -- or better.
@@ -52,8 +51,9 @@ Start with a 4x4 matrix and set lambda = mean number of mutations per genome, an
         
         average the results to calculate the null distribution.
 
-###Procedure 5: Relative counts of dN, dS, and intergenic mutations at gene and
-genome level.
+This procedure could be extended to clinical or epidemiological isolates in the future.
+
+###Procedure 5: Relative counts of dN, dS, and intergenic mutations at gene and genome level.
 
 This should be straightforward from the genome diff format.
 
