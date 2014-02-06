@@ -1,8 +1,6 @@
 parallyze
 =========
 
-camille has made an edit!!!!!!!!
-
 software to analyze parallel genome evolution by generating null distributions.
 
 parallyze can also be used to do a power analysis for the number of lines 
