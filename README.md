@@ -64,6 +64,7 @@ This should be straightforward from the genome diff format.
 * Bennett temperature-evolved genomes (doi:10.1126/science.1212986)
 * Brian Wade's dessication lines
 * Josh Nahum and Christian's sequencing of Paco's lines.
+* Phage lambda datasets?
 * Perhaps Lieberman et al. Burkholderia outbreak isolates (doi:10.1038/ng.997)?
 
 ##NOTES
