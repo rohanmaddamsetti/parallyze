@@ -20,7 +20,7 @@ def main():
 	args = parser.parse_args()
 	
 	print "\nHello World!\n"
-	if args.config != 'config.txt':
+	if args.config != 'config.txt' or 'config_default.txt':
 		print "Error: please ensure file is titled config.txt"
 #	elif args.config != a text file in right format
 #		print "Error: please ensure file is a .txt file"
@@ -29,4 +29,7 @@ def main():
 	if args.reference:
 		print "The reference genome is", args.reference
 	print args
+
+#	test if reference genome, procedure, and genomediff files are valid
+#	ensure, given each procedure, appropriate files are included
 main()
