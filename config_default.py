@@ -8,5 +8,5 @@ REFERENCE_GENOME = '''
 GENOME_DIFFS = '''
 ~/Users/elizabethbaird/Desktop/parallyze/Ara+3_REL10953.gd
 ~/Users/elizabethbaird/Desktop/parallyze/Ara+3_REL10954.gd
-~/Users/elizabethbaird/Desktop/parallyze/Ara+6_REL10956.gd
+~/Users/elizabethbaird/Desktop/parallyze/Ara+6_REL10985.gd
 '''
