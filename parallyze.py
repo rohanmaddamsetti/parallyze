@@ -19,7 +19,7 @@ def file_list(fs):
 
 def get_config():
     conf = {}
-    if PROCEDURE == 1:
+    if PROCEDURE == 3:
         reference = REFERENCE_GENOME.strip()
         assert os.path.isfile(reference)
         assert reference.endswith('.gb')
