@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 #usage: python parallyze.py config.txt [genomediff1.gd genomediff2.gd ... n : referencegenome.gb(k) {genbank}]
 
@@ -7,9 +7,10 @@
 #try to break
 
 import argparse
-import config
 import os
 import sys
+
+import config
 
 def file_list(fs):
     flist = fs.split()
@@ -42,11 +43,10 @@ def get_config():
         sys.exit()
 
 def main():
-	parser = argparse.ArgumentParser()
-#	parser.parse_args()
-	parser.add_argument(dest='config', help="First entry should be a config.py file. File should be in working folder.")
-	parser.add_argument('-r', dest='reference', default="NONE")
-    args = parse.parse_args()
+    parser = argparse.ArgumentParser()
+    #parser.add_argument(dest='config', help="First entry should be a config.py file. File should be in working folder.")
+    #parser.add_argument('-r', dest='reference', default="NONE")
+    args = parser.parse_args()
 
     conf = get_config()
     print conf['procedure'], conf['reference']
