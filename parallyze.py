@@ -11,6 +11,8 @@ import os
 import sys
 
 import config
+import config_default
+import config_test
 
 def file_list(fs):
     flist = fs.split()
@@ -20,27 +22,30 @@ def file_list(fs):
 
 def get_config():
     conf = {}
-    if PROCEDURE == 3:
-        reference = REFERENCE_GENOME.strip()
+    if config.PROCEDURE == 3:
+        reference = config.REFERENCE_GENOME.strip()
         assert os.path.isfile(reference)
         assert reference.endswith('.gb') 
-        conf['procedure'] = PROCEDURE
-        conf['reference'] = reference
+        conf['procedure'] = config.PROCEDURE
+        conf['reference'] = config.reference
         return conf
-    elif PROCEDURE in [1,2,4,5]:  
-        reference = REFERENCE_GENOME.strip()
+    elif config.PROCEDURE in [1,2,4,5]:  
+        reference = config.REFERENCE_GENOME.strip()
         assert os.path.isfile(reference)
         assert reference.endswith('.gb')
-        diffs = file_list(GENOME_DIFFS)
+        diffs = file_list(config.GENOME_DIFF_FILES)
         for diff_file in diffs:   #annotated vs. non-annotated genomediff files
             assert diff_file.endswith('.gd')
         conf['reference'] = reference
-        conf['procedure'] = PROCEDURE
+        conf['procedure'] = config.PROCEDURE
         conf['diffs'] = diffs
         return conf
     else:
-        print >>sys.stderr, 'Invalid procedure {p}! Exiting...'.format(p=PROCEDURE)
-        sys.exit()
+        print >>sys.stderr, 'Invalid procedure {p}! Using test data'.format(p=config.PROCEDURE)
+        conf['reference'] = config_test.REFERENCE_GENOME
+        conf['procedure'] = config_test.PROCEDURE
+        conf['diffs'] = config_test.GENOME_DIFF_FILES
+        return conf
 
 def main():
     parser = argparse.ArgumentParser()
