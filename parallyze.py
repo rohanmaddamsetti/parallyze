@@ -23,28 +23,29 @@ def file_list(fs):
 def get_config():
     conf = {}
     if config.PROCEDURE == 3:
-        reference = config.REFERENCE_GENOME.strip()
-        assert os.path.isfile(reference)
-        assert reference.endswith('.gb') 
+        ref = config.REF_GENOME.strip()
+        assert os.path.isfile(ref)
+        assert ref.endswith('.gb') 
         conf['procedure'] = config.PROCEDURE
-        conf['reference'] = config.reference
+        conf['ref'] = config.ref
         return conf
     elif config.PROCEDURE in [1,2,4,5]:  
-        reference = config.REFERENCE_GENOME.strip()
-        assert os.path.isfile(reference)
-        assert reference.endswith('.gb')
-        diffs = file_list(config.GENOME_DIFF_FILES)
+        ref = config.REF_GENOME.strip()
+	print 'configuration: ' ref
+        assert os.path.isfile(ref)
+        assert ref.endswith('.gb')
+        diffs = file_list(config.GENOME_DIFFS)
         for diff_file in diffs:   #annotated vs. non-annotated genomediff files
             assert diff_file.endswith('.gd')
-        conf['reference'] = reference
+        conf['ref'] = ref
         conf['procedure'] = config.PROCEDURE
         conf['diffs'] = diffs
         return conf
     else:
-        print >>sys.stderr, 'Invalid procedure {p}! Using test data'.format(p=config.PROCEDURE)
-        conf['reference'] = config_test.REFERENCE_GENOME
-        conf['procedure'] = config_test.PROCEDURE
-        conf['diffs'] = config_test.GENOME_DIFF_FILES
+        print >>sys.stderr, 'Invalid procedure {p}! Using default data'.format(p=config.PROCEDURE)
+        conf['ref'] = config_default.REF_GENOME
+        conf['procedure'] = config_default.PROCEDURE
+        conf['diffs'] = config_default.GENOME_DIFFS
         return conf
 
 def main():
@@ -54,6 +55,6 @@ def main():
     args = parser.parse_args()
 
     conf = get_config()
-    print >>sys.stderr, 'configuration: ', conf['procedure'], conf['reference']
+    print >>sys.stderr, 'configuration: ', conf['procedure'], conf['ref'], conf['diffs']
 
 main()

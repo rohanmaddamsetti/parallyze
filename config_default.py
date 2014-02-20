@@ -2,7 +2,7 @@
 #Please enter the requested information in the line below the request
 
 PROCEDURE = 2
-REFERENCE_GENOME = '''
+REF_GENOME = '''
 ~/Users/elizabethbaird/Desktop/parallyze/reference.gb
 '''
 GENOME_DIFFS = '''
