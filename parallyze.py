@@ -12,7 +12,6 @@ import sys
 
 import config
 import config_default
-import config_test
 
 def file_list(fs):
     flist = fs.split()
@@ -31,7 +30,6 @@ def get_config():
         return conf
     elif config.PROCEDURE in [1,2,4,5]:  
         ref = config.REF_GENOME.strip()
-	print 'configuration: ' ref
         assert os.path.isfile(ref)
         assert ref.endswith('.gb')
         diffs = file_list(config.GENOME_DIFFS)
