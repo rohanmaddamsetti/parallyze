@@ -23,16 +23,16 @@ def get_config():
     if PROCEDURE == 3:
         reference = REFERENCE_GENOME.strip()
         assert os.path.isfile(reference)
-        assert reference.endswith('.gb')
+        assert reference.endswith('.gb') 
         conf['procedure'] = PROCEDURE
         conf['reference'] = reference
         return conf
-    elif PROCEDURE == 2:
+    elif PROCEDURE in [1,2,4,5]:  
         reference = REFERENCE_GENOME.strip()
         assert os.path.isfile(reference)
         assert reference.endswith('.gb')
         diffs = file_list(GENOME_DIFFS)
-        for diff_file in diffs:
+        for diff_file in diffs:   #annotated vs. non-annotated genomediff files
             assert diff_file.endswith('.gd')
         conf['reference'] = reference
         conf['procedure'] = PROCEDURE
@@ -50,6 +50,5 @@ def main():
 
     conf = get_config()
     print conf['procedure'], conf['reference']
-
 
 main()
