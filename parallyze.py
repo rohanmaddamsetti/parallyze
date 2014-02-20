@@ -54,6 +54,6 @@ def main():
     args = parser.parse_args()
 
     conf = get_config()
-    print conf['procedure'], conf['reference']
+    print >>sys.stderr, 'configuration: ', conf['procedure'], conf['reference']
 
 main()
