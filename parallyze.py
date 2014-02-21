@@ -21,14 +21,17 @@ def file_list(fs):
 
 def get_config():
     conf = {}
-    if config.PROCEDURE == 3:
+    if config.PROCEDURE == '3':
         ref = config.REF_GENOME.strip()
         assert os.path.isfile(ref)
         assert ref.endswith('.gb') 
         conf['procedure'] = config.PROCEDURE
-        conf['ref'] = config.ref
+        conf['ref'] = ref
+	#if len(config.GENOME_DIFFS.strip()),
+		#conf[diffs']= "Rightfully empty"
+	#else print >>sys.stderr, 'Inappropriate inclusion of genome diff files for Procedure 3'
         return conf
-    elif config.PROCEDURE in [1,2,4,5]:  
+    elif config.PROCEDURE in ['1','2','4','5']:  
         ref = config.REF_GENOME.strip()
         assert os.path.isfile(ref)
         assert ref.endswith('.gb')
@@ -53,6 +56,6 @@ def main():
     args = parser.parse_args()
 
     conf = get_config()
-    print >>sys.stderr, 'configuration: ', conf['procedure'], conf['ref'], conf['diffs']
-
+    print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs']
+#procedure 3
 main()

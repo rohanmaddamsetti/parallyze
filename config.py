@@ -3,7 +3,8 @@
 #Have each genome diff file on a separate line
 #Don't delete quote marks
 
-PROCEDURE = 4
+PROCEDURE = ''' 3
+'''
 
 REF_GENOME = '''
 /Users/elizabethbaird/Desktop/parallyze/reference.gb
