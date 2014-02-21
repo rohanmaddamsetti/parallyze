@@ -27,17 +27,17 @@ def get_config():
         assert ref.endswith('.gb') 
         conf['procedure'] = config.PROCEDURE
         conf['ref'] = ref
-	#if len(config.GENOME_DIFFS.strip()),
-		#conf[diffs']= "Rightfully empty"
-	#else print >>sys.stderr, 'Inappropriate inclusion of genome diff files for Procedure 3'
+	assert len(config.GENOME_DIFFS.strip())==0
+#	    print >>sys.stderr, 'Inappropriate inclusion of genome diff files for Procedure 3'
         return conf
     elif config.PROCEDURE in ['1','2','4','5']:  
         ref = config.REF_GENOME.strip()
         assert os.path.isfile(ref)
         assert ref.endswith('.gb')
         diffs = file_list(config.GENOME_DIFFS)
+	assert len(diffs)!=0
         for diff_file in diffs:   #annotated vs. non-annotated genomediff files
-            assert diff_file.endswith('.gd')
+	     assert diff_file.endswith('.gd')
         conf['ref'] = ref
         conf['procedure'] = config.PROCEDURE
         conf['diffs'] = diffs
@@ -51,11 +51,13 @@ def get_config():
 
 def main():
     parser = argparse.ArgumentParser()
-    #parser.add_argument(dest='config', help="First entry should be a config.py file. File should be in working folder.")
+    #parser.add_argument(dest='config', help="Config.py file should be in working folder.")
     #parser.add_argument('-r', dest='reference', default="NONE")
     args = parser.parse_args()
 
     conf = get_config()
-    print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs']
-#procedure 3
+    if conf['procedure']=='3':
+	print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref']
+    else: 
+        print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs']
 main()
