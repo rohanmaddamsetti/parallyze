@@ -2,10 +2,6 @@
 
 #usage: python parallyze.py config.txt [genomediff1.gd genomediff2.gd ... n : referencegenome.gb(k) {genbank}]
 
-#find config.txt
-#find .gd files, save in list
-#try to break
-
 import argparse
 import os
 import sys
@@ -19,16 +15,15 @@ def file_list(fs):
         assert os.path.isfile(f)
     return flist
 
+conf={}
 def get_config():
-    conf = {}
     if config.PROCEDURE == '3':
         ref = config.REF_GENOME.strip()
         assert os.path.isfile(ref)
         assert ref.endswith('.gb') 
         conf['procedure'] = config.PROCEDURE
-        conf['ref'] = ref
+	conf['ref'] = ref
 	assert len(config.GENOME_DIFFS.strip())==0
-#	    print >>sys.stderr, 'Inappropriate inclusion of genome diff files for Procedure 3'
         return conf
     elif config.PROCEDURE in ['1','2','4','5']:  
         ref = config.REF_GENOME.strip()
@@ -61,3 +56,12 @@ def main():
     else: 
         print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs']
 main()
+
+def proc3():
+    if conf['procedure']=='3': #more elegant way to do this?
+	print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n'
+#determine length of ref genome. assign a position number to each base.
+#	for line in file('reference.gb,' 'r'):
+#	    if line.startswith(a number):
+		#peel off first number, assign each character to a sequential number
+proc3()
