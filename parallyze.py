@@ -57,11 +57,16 @@ def main():
         print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs']
 main()
 
+def defreflist():
+    reflist=[]
+#determine length of ref genome. assign a position number to each base.
+#create list or array (?) of the ref.gen.
+#	for line in file('reference.gb,' 'r'):
+#	    if line.startswith(a number) and line.isupper():
+		#peel off first number, assign each character to a sequential number
+		#array.count(x) or len(<seq>)
+
 def proc3():
     if conf['procedure']=='3': #more elegant way to do this?
 	print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n'
-#determine length of ref genome. assign a position number to each base.
-#	for line in file('reference.gb,' 'r'):
-#	    if line.startswith(a number):
-		#peel off first number, assign each character to a sequential number
 proc3()
