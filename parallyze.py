@@ -66,6 +66,14 @@ def defreflist():
 		#peel off first number, assign each character to a sequential number
 		#array.count(x) or len(<seq>)
 
+#from Bio import SeqIO
+#from Bio.Seq import Seq
+#from Bio.Alphabet import IUPAC
+#for seq_record in SeqIO.parse("reference.gb", "genbank"):
+    #print(seq_record.id)
+    #refseq=repr(seq_record.seq)
+    #print(len(seq_record))
+    #mutable_refseq=refseq.tomutable()
 def proc3():
     if conf['procedure']=='3': #more elegant way to do this?
 	print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n'
