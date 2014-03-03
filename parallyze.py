@@ -15,8 +15,8 @@ def file_list(fs):
         assert os.path.isfile(f)
     return flist
 
-conf={}
 def get_config():
+    conf={}
     if config.PROCEDURE == '3':
         ref = config.REF_GENOME.strip()
         assert os.path.isfile(ref)
@@ -57,8 +57,13 @@ def main():
         print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs']
 main()
 
-def defreflist():
+def defreflist(filename):
     reflist=[]
+#ref=''
+#fp=open(filename, 'rU')
+#for record in SeqIO.parse(filepath, "genbank"):
+    #ref += repr(record.seq)
+        #if I wanted all genome parts concatenated into one string
 #determine length of ref genome. assign a position number to each base.
 #create list or array (?) of the ref.gen.
 #	for line in file('reference.gb,' 'r'):
@@ -66,7 +71,19 @@ def defreflist():
 		#peel off first number, assign each character to a sequential number
 		#array.count(x) or len(<seq>)
 
-def proc3():
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.Alphabet import IUPAC
+#for seq_record in SeqIO.parse("reference.gb", "genbank"):
+    #print(seq_record.id)
+    #refseq=repr(seq_record.seq)
+    #print(len(seq_record))
+    #concatenate - or not - string.join
+    #do in fasta. 
+    #what's the output format? - did rohan ever do a 2nd mtg w/ tracy?
+    #mutable_refseq=refseq.tomutable()
+def proc3(conf):
     if conf['procedure']=='3': #more elegant way to do this?
 	print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
+    #if conf['procedure']=='3': #more elegant way to do this?
 proc3()

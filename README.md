@@ -1,6 +1,10 @@
 parallyze
 =========
 
+User will need to install Biopython before running the script. 
+    pip install biopython #this installs onto the computer
+    pip install numpy
+
 software to analyze parallel genome evolution by generating null distributions.
 
 parallyze can also be used to do a power analysis for the number of lines 
