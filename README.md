@@ -2,8 +2,8 @@ parallyze
 =========
 
 User will need to install Biopython before running the script. 
-pip install biopython
-numpy
+    pip install biopython #this installs onto the computer
+    pip install numpy
 
 software to analyze parallel genome evolution by generating null distributions.
 
