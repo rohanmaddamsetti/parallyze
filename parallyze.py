@@ -53,8 +53,17 @@ def main():
     conf = get_config()
     if conf['procedure']=='3':
 	print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref']
+	proc3()
     else: 
         print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs']
+	if conf['procedure']=='1':
+	    proc1()
+	elif conf['procedure']=='2':
+	    proc2()
+	elif conf['procedure']=='4':
+	    proc4()
+	elif conf['procedure']=='5':
+	    proc5()
 main()
 
 def defreflist(filename):
@@ -71,19 +80,20 @@ def defreflist(filename):
 		#peel off first number, assign each character to a sequential number
 		#array.count(x) or len(<seq>)
 
-from Bio import SeqIO
-from Bio.Seq import Seq
-from Bio.Alphabet import IUPAC
+#from Bio import SeqIO
+#from Bio.Seq import Seq
+#from Bio.Alphabet import IUPAC
+
 #for seq_record in SeqIO.parse("reference.gb", "genbank"):
     #print(seq_record.id)
     #refseq=repr(seq_record.seq)
     #print(len(seq_record))
-    #concatenate - or not - string.join
-    #do in fasta. 
-    #what's the output format? - did rohan ever do a 2nd mtg w/ tracy?
+    #what's the output format? 
     #mutable_refseq=refseq.tomutable()
-def proc3(conf):
-    if conf['procedure']=='3': #more elegant way to do this?
+def proc3():
+  #  if conf['procedure']=='3': #more elegant way to do this?
 	print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
-    #if conf['procedure']=='3': #more elegant way to do this?
-proc3()
+#	replicates=eval(input("How many replicates?  "))
+#	lines=eval(input("How many lines?  "))
+#rohan: pass whole object or just relevant bits of configuration
+#proc3()
