@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-#usage: python parallyze.py config.txt [genomediff1.gd genomediff2.gd ... n : referencegenome.gb(k) {genbank}]
+#install BioPython and numpy (?) first (see README.md)
+#usage: python parallyze.py
 
 import argparse
 import os
@@ -8,6 +9,8 @@ import sys
 
 import config
 import config_default
+
+#import biopython and numpy
 
 def file_list(fs):
     flist = fs.split()
@@ -44,6 +47,35 @@ def get_config():
         conf['diffs'] = config_default.GENOME_DIFFS
         return conf
 
+def reflist(filename):
+    reflist=[]
+#ref=''
+#fp=open(filename, 'rU')
+#determine length of ref genome. assign a position number to each base.
+#create list or array (?) of the ref.gen.
+#	for line in file('reference.gb,' 'r'):
+#	    if line.startswith(a number) and line.isupper():
+		#peel off first number, assign each character to a sequential number
+		#array.count(x) or len(<seq>)
+
+from Bio import SeqIO
+from Bio.Seq import Seq
+#from numpy import <whatever's needed>
+#from Bio.Alphabet import IUPAC
+
+#for seq_record in SeqIO.parse("reference.gb", "genbank"):
+    #print(seq_record.id)
+    #refseq=repr(seq_record.seq)
+    #print(len(seq_record))
+    #what's the output format? 
+    #mutable_refseq=refseq.tomutable()
+
+def proc3():
+	print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
+	replicates=input("How many replicates?  ")
+	lines=input("How many lines?  ")
+#rohan: pass whole object or just relevant bits of configuration
+
 def main():
     parser = argparse.ArgumentParser()
     #parser.add_argument(dest='config', help="Config.py file should be in working folder.")
@@ -65,35 +97,3 @@ def main():
 	elif conf['procedure']=='5':
 	    proc5()
 main()
-
-def defreflist(filename):
-    reflist=[]
-#ref=''
-#fp=open(filename, 'rU')
-#for record in SeqIO.parse(filepath, "genbank"):
-    #ref += repr(record.seq)
-        #if I wanted all genome parts concatenated into one string
-#determine length of ref genome. assign a position number to each base.
-#create list or array (?) of the ref.gen.
-#	for line in file('reference.gb,' 'r'):
-#	    if line.startswith(a number) and line.isupper():
-		#peel off first number, assign each character to a sequential number
-		#array.count(x) or len(<seq>)
-
-#from Bio import SeqIO
-#from Bio.Seq import Seq
-#from Bio.Alphabet import IUPAC
-
-#for seq_record in SeqIO.parse("reference.gb", "genbank"):
-    #print(seq_record.id)
-    #refseq=repr(seq_record.seq)
-    #print(len(seq_record))
-    #what's the output format? 
-    #mutable_refseq=refseq.tomutable()
-def proc3():
-  #  if conf['procedure']=='3': #more elegant way to do this?
-	print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
-#	replicates=eval(input("How many replicates?  "))
-#	lines=eval(input("How many lines?  "))
-#rohan: pass whole object or just relevant bits of configuration
-#proc3()

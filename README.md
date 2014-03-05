@@ -1,9 +1,14 @@
 parallyze
 =========
 
-User will need to install Biopython before running this program. 
-        pip install biopython
-        pip install numpy
+You will need to install Biopython before running this program. Either do the following from the command line or download BioPython directly from the website: http://biopython.org/wiki/Download 
+        
+    pip install biopython
+    pip install numpy
+
+To run the program, type this into the command line:
+
+    python parallyze.py
 
 software to analyze parallel genome evolution by generating null distributions.
 
