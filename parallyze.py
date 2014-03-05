@@ -60,10 +60,10 @@ def reflist(filename):
 
 from Bio import SeqIO
 from Bio.Seq import Seq
-#from numpy import <whatever's needed>
-#from Bio.Alphabet import IUPAC
+from Bio.Alphabet import IUPAC
 
-#for seq_record in SeqIO.parse("reference.gb", "genbank"):
+#from numpy import <whatever's needed>
+#for seq in SeqIO.parse(conf['ref'], "genbank"):
     #print(seq_record.id)
     #refseq=repr(seq_record.seq)
     #print(len(seq_record))
@@ -85,15 +85,15 @@ def main():
     conf = get_config()
     if conf['procedure']=='3':
 	print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref']
-	proc3()
+	proc3(conf)
     else: 
         print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs']
 	if conf['procedure']=='1':
-	    proc1()
+	    proc1(conf)
 	elif conf['procedure']=='2':
-	    proc2()
+	    proc2(conf)
 	elif conf['procedure']=='4':
-	    proc4()
+	    proc4(conf)
 	elif conf['procedure']=='5':
-	    proc5()
+	    proc5(conf)
 main()
