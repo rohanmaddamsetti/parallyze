@@ -3,8 +3,8 @@ parallyze
 
 You will need to install Biopython before running this program. Either do the following from the command line or download BioPython directly from the website: http://biopython.org/wiki/Download 
         
-    pip install biopython
-    pip install numpy
+    sudo pip install biopython
+    sudo pip install numpy
 
 To run the program, type this into the command line:
 
