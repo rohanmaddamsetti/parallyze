@@ -61,6 +61,7 @@ def reflist(filename):
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
+from Bio.Seq import MutableSeq
 
 #from numpy import <whatever's needed>
 #for seq in SeqIO.parse(conf['ref'], "genbank"):
@@ -70,10 +71,13 @@ from Bio.Alphabet import IUPAC
     #what's the output format? 
     #mutable_refseq=refseq.tomutable()
 
-def proc3():
-	print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
-	replicates=input("How many replicates?  ")
-	lines=input("How many lines?  ")
+def proc3(conf):
+    print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
+    replicates=input("How many replicates?  ")
+    lines=input("How many lines?  ")
+    for record in SeqIO.parse([confrefseq=repr(seq_record.seq)
+    mutrefseq=refseq.tomutable()
+    print(len(seq_record))	
 #rohan: pass whole object or just relevant bits of configuration
 
 def main():
