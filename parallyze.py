@@ -73,8 +73,8 @@ from numpy import random
 
 def proc3(conf):
     print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
-    replicates=input("How many replicates?  ")
     lines=input("How many lines?  ")
+    replicates=input("How many replicates?  ")
     for record in SeqIO.parse(conf['ref'], "genbank"):
         refseq=repr(record.seq) #does this do what i want?
         #mutrefseq=record.tomutable()
