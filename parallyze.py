@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-#install BioPython and numpy (?) first (see README.md)
 #usage: python parallyze.py
 
 import argparse
@@ -9,8 +6,6 @@ import sys
 
 import config
 import config_default
-
-#import biopython and numpy
 
 def file_list(fs):
     flist = fs.split()
@@ -64,24 +59,47 @@ from Bio.Alphabet import IUPAC
 from Bio.Seq import MutableSeq
 
 from numpy import random
-#for seq in SeqIO.parse(conf['ref'], "genbank"):
-    #print(seq_record.id)
-    #refseq=repr(seq_record.seq)
-    #print(len(seq_record))
-    #what's the output format? 
-    #mutable_refseq=refseq.tomutable()
+
+def base_to_int(i):
+    if i == 'A':
+        return 0
+    elif i == 'G':
+        return 1
+    elif i == 'C':
+        return 2
+    else:
+        return 3
+
+def int_to_base(i):
+    if i == 0:
+        return 'A'
+    elif i == 1:
+        return 'G'
+    elif i == 2:
+        return 'C'
+    else:
+        return 'T'
+
+def seq_to_int(seq):
+    converted=[base_to_int(b) for b in seq]
+    return converted
+
+def int_to_seq(seq):
+    converted=[int_to_base(b) for b in seq]
+    return converted
 
 def proc3(conf):
     print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
     lines=input("How many lines?  ")
+    gens=input("How many generations? ")
     reps=input("How many replicates?  ")
 
     '''
-    SeqIO.parse is an iterator. Thus, it has a method named "next"
+    SeqIO.parse is an iterator and so has a method named "next"
     which is called when you use it in a for loop, ie:
     for record in SeqIO.parse(stuff):
         do stuff
-    We can call it explicity, once, because we're assuming there is only
+    We can call it explicitly, once, because we're assuming there is only
     one record in the SeqIO iterator. We will be *very* explicit and store
     the iterator itself as it, then  call next() on it like so:
     '''
@@ -91,12 +109,18 @@ def proc3(conf):
     # convert the biopython Seq object to a python string
     seq = list(str(record.seq))
     length=len(seq)
-    print 'Seq as list [truncated]:', seq[:10000], '...'
+    ## print 'Seq as list [truncated]:', seq[:5000], '...'
     
+    countA=seq.count('A')
+    countG=seq.count('G')
+    countC=seq.count('C')
+    countT=seq.count('T')
+    print 'A: ', countA, '   G: ', countG, '   C: ', countC, '   T: ', countT
+
     # or do seq = ''.join(seq) to save it as a string and overwrite the list
-    print 'Seq as string [truncated]:', ''.join(seq)[:10000], '...'
+    ## print 'Seq as string [truncated]:', ''.join(seq)[:5000], '...'
     print "Number of bases: ", length
-        #print(record[0:9], '...', record[length-10:length])
+        #print(record[0:9], '...', record[length-10:length]) 
 
 def main():
     parser = argparse.ArgumentParser()
