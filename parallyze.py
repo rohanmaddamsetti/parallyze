@@ -75,13 +75,27 @@ def proc3(conf):
     print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
     lines=input("How many lines?  ")
     reps=input("How many replicates?  ")
-    for record in SeqIO.parse(conf['ref'], "genbank"):
-        refseq=repr(record.seq) #does this do what i want?
-        #mutrefseq=record.tomutable()
-        length=len(record)
-	#murefseq=refseq.tomutable()
-	print(len(refseq)) #yields "88"
-	print"Number of bases: ", length
+
+    '''
+    SeqIO.parse is an iterator. Thus, it has a method named "next"
+    which is called when you use it in a for loop, ie:
+    for record in SeqIO.parse(stuff):
+        do stuff
+    We can call it explicity, once, because we're assuming there is only
+    one record in the SeqIO iterator. We will be *very* explicit and store
+    the iterator itself as it, then  call next() on it like so:
+    '''
+    it = SeqIO.parse(conf['ref'], "genbank")
+    record = it.next() 
+
+    # convert the biopython Seq object to a python string
+    seq = list(str(record.seq))
+    length=len(seq)
+    print 'Seq as list [truncated]:', seq[:10000], '...'
+    
+    # or do seq = ''.join(seq) to save it as a string and overwrite the list
+    print 'Seq as string [truncated]:', ''.join(seq)[:10000], '...'
+    print "Number of bases: ", length
         #print(record[0:9], '...', record[length-10:length])
 
 def main():

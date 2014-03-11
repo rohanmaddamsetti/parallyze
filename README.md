@@ -97,3 +97,35 @@ compared to pykF, but if only 2 sites in the spoT matter, compared to pykF, etc.
 In any case, including a temporal dimension (randomizing the identity of mutations over a phylogeny)
 will surely allow for other interesting statistical tests.
 
+##Mutation Implementation Idea
+
+Numpy has a function which, given a list of probabilities, will choose elements from that list based on those probabilities.
+
+So, first convert the list of bases to a list of probabilities, using a list comprehension. Something like:
+
+def pFunc(base):
+    if base == 'A':
+	return pA
+    elif base == 'T':
+	return pT
+    elif base == 'G':
+	return pG
+    else:
+	return pC
+
+Where pX is the probability (summed from that row in the matrix) of chosing that base. For this to work,
+you'll need to divide each pX by len(seq).
+
+Then, use the list comp like:
+
+probs = [pFunc(base) for base in seq]
+
+Where seq is the list version of the sequence.
+
+Then just call numpy.random.choice(range(len(seq)),p=probs) to get a position. Do this for as many mutations as
+decided from your Poisson model, or just pass that number to choice like so:
+
+mutpositions = numpy.random.choice(range(len(seq)), size=nummuts, p=probs, replace=False/True)
+
+Now that you have the positions, it is trivial to check which base is at the position and use the probability
+matrix to decide to which base it mutates.
