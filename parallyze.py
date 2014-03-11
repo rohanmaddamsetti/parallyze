@@ -74,14 +74,15 @@ from numpy import random
 def proc3(conf):
     print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
     lines=input("How many lines?  ")
-    replicates=input("How many replicates?  ")
+    reps=input("How many replicates?  ")
     for record in SeqIO.parse(conf['ref'], "genbank"):
         refseq=repr(record.seq) #does this do what i want?
         #mutrefseq=record.tomutable()
         length=len(record)
-        print"Number of bases: ", length
+	#murefseq=refseq.tomutable()
+	print(len(refseq)) #yields "88"
+	print"Number of bases: ", length
         #print(record[0:9], '...', record[length-10:length])
-#rohan: pass whole object or just relevant bits of configuration
 
 def main():
     parser = argparse.ArgumentParser()
