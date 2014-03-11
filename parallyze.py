@@ -111,11 +111,11 @@ def proc3(conf):
     length=len(seq)
     ## print 'Seq as list [truncated]:', seq[:5000], '...'
     
-    countA=seq.count('A')
+    countA=seq.count('A') #possibly change to 0,1,2,3
     countG=seq.count('G')
     countC=seq.count('C')
     countT=seq.count('T')
-    print 'A: ', countA, '   G: ', countG, '   C: ', countC, '   T: ', countT
+    print 'A:', countA, '   G:', countG, '   C:', countC, '   T:', countT
 
     # or do seq = ''.join(seq) to save it as a string and overwrite the list
     ## print 'Seq as string [truncated]:', ''.join(seq)[:5000], '...'
