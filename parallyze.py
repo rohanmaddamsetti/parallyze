@@ -42,16 +42,7 @@ def get_config():
         conf['diffs'] = config_default.GENOME_DIFFS
         return conf
 
-def reflist(filename):
-    reflist=[]
-#ref=''
 #fp=open(filename, 'rU')
-#determine length of ref genome. assign a position number to each base.
-#create list or array (?) of the ref.gen.
-#	for line in file('reference.gb,' 'r'):
-#	    if line.startswith(a number) and line.isupper():
-		#peel off first number, assign each character to a sequential number
-		#array.count(x) or len(<seq>)
 
 from Bio import SeqIO
 from Bio.Seq import Seq
