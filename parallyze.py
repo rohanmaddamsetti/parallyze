@@ -109,9 +109,9 @@ def proc3(conf):
     print 'A:', countA, '   G:', countG, '   C:', countC, '   T:', countT
 
     # or do seq = ''.join(seq) to save it as a string and overwrite the list
-    ## print 'Seq as string [truncated]:', ''.join(seq)[:5000], '...'
+    ##print 'Seq as string [truncated]:', ''.join(seq)[:1000], '...'
     print "Number of bases: ", length
-        #print(record[0:9], '...', record[length-10:length]) 
+    print 'Seq as condensed string:', ''.join(seq)[0:100], '...', ''.join(seq)[length-100:length] 
 
 def main():
     parser = argparse.ArgumentParser()
