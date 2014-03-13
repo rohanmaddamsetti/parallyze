@@ -79,6 +79,10 @@ def int_to_seq(seq):
     converted=[int_to_base(b) for b in seq]
     return converted
 
+def proc1(conf):
+    mutlist=[]
+    
+
 def proc3(conf):
     print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
     lines=input("How many lines?  ")
