@@ -6,11 +6,11 @@
 PROCEDURE = '1'
 
 REF_GENOME = '''
-~/Elizabeth/parallyze/reference.gb
+/Users/elizabethbaird/Desktop/parallyze/reference.gb
 '''
 
 GENOME_DIFFS = ''' 
-User/Elizabeth/parallyze/Ara+3_REL10953.gd
-User/Elizabeth/parallyze/Ara+3_REL10954.gd 
-User/Elizabeth/parallyze/Ara+6_REL10985.gd  
+/Users/elizabethbaird/Desktop/parallyze/Ara+3_REL10953.gd
+/Users/elizabethbaird/Desktop/parallyze/Ara+3_REL10954.gd
+/Users/elizabethbaird/Desktop/parallyze/Ara+6_REL10985.gd	  
 '''
