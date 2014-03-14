@@ -81,7 +81,19 @@ def int_to_seq(seq):
 
 def proc1(conf):
     mutlist=[]
-    
+    mutations={}
+    with open(conf['diffs']) as fp:
+        for line in fp: #what about 1st line? later delete any mut_type starting with #=GENOME_DIFF?
+            line=line.split()
+            mut_type=line[0]
+            mut_id=line[1]
+            parent_ids=line[2].split(,)
+            if mut_type=='SNP':
+                #do stuff with line[3] through end
+            elif mut_type=='SUB':
+            #while mut_type count is 3 chars, continue - to terminate transfer of info when it gets gobbledy-gooky?
+
+    mutations[mut_id]={'type': mut_type, "parents': parent_ids, ...)
 
 def proc3(conf):
     print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
