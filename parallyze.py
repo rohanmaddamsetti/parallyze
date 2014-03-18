@@ -41,6 +41,9 @@ def get_config():
         conf['procedure'] = config_default.PROCEDURE
         conf['diffs'] = config_default.GENOME_DIFFS
         return conf
+    print class (conf['diffs'])
+
+get_config()
 
 #fp=open(filename, 'rU')
 
@@ -82,19 +85,41 @@ def int_to_seq(seq):
 def proc1(conf):
     mutlist=[]
     mutations={}
-    with open(conf['diffs']) as fp:
-        for line in fp: #what about 1st line? later delete any mut_type starting with #=GENOME_DIFF?
+    with open(conf['diffs']) as fp: #conf['diffs'] should be string or buffer?
+        for line in fp: 
+            if line.startswith('#' or 'JC' or 'RA' or 'UN'):
+                continue #does this start 'for line' loop again?
             line=line.split()
             mut_type=line[0]
             mut_id=line[1]
-            parent_ids=line[2].split(,)
+            parent_ids=line[2].split(',')
+            seq_id==line[3]
+            position==line[4]
             if mut_type=='SNP':
-                #do stuff with line[3] through end
+                new_seq==line[5]
             elif mut_type=='SUB':
+                size==line[5]
+                new_seq==line[6]
+            elif mut_type=='DEL':
+                size==line[5]
+            elif mut_type=='INS':
+                new_seq==line[5]
+            elif mut_type=='MOB':
+                repeat_name==line[5]
+                strand==line[6]
+                duplication_size==line[7]
+            elif mut_type=='AMP':
+                size==line[5]
+                new_copy_number==line[6]
+            elif mut_type=='CON':
+                size==line[5]
+                region==line[6]
+            elif mut_type=='INV':
+                size==line[5]
             #while mut_type count is 3 chars, continue - to terminate transfer of info when it gets gobbledy-gooky?
 
-    mutations[mut_id]={'type': mut_type, "parents': parent_ids, ...)
-
+    #mutations[mut_id]={'type': mut_type, 'parents': parent_ids, ...)
+    #what is funciton of above line?
 def proc3(conf):
     print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
     lines=input("How many lines?  ")
