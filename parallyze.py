@@ -49,7 +49,7 @@ def get_config():
         conf['procedure'] = config_default.PROCEDURE
         conf['diffs'] = config_default.GENOME_DIFFS
         return conf
-    print class (conf['diffs'])
+   # print class (conf['diffs'])
 
 get_config()
 
@@ -89,38 +89,39 @@ def proc1(conf):
     #loop over conf['diffs'] for each file
     #fp=open(conf['diffs']) #maybe 'with' puts out nice error messages without it dying
     for fname in conf['diffs']:
-        with open(fname) as fp: #conf['diffs'] should be string or buffer?
+        with open(fname) as fp:
             for line in fp: 
                 if line.startswith('#' or 'JC' or 'RA' or 'UN'):
-                    continue #does this start 'for line' loop again?
+                    continue
                 line=line.split()
                 mut_type=line[0]
                 mut_id=line[1]
                 parent_ids=line[2].split(',')
-                seq_id==line[3]
-                position==line[4]
+                seq_id=line[3]
+                position=line[4]
                 if mut_type=='SNP':
-                    new_seq==line[5]
+                    new_se=line[5]
                 elif mut_type=='SUB':
-                    size==line[5]
-                    new_seq==line[6]
+                    size=line[5]
+                    new_se==line[6]
                 elif mut_type=='DEL':
-                    size==line[5]
+                    size=line[5]
                 elif mut_type=='INS':
-                    new_seq==line[5]
+                    new_seq=line[5]
                 elif mut_type=='MOB':
-                    repeat_name==line[5]
-                    strand==line[6]
-                    duplication_size==line[7]
+                    repeat_nam=line[5]
+                    strand=line[6]
+                    duplication_size=line[7]
                 elif mut_type=='AMP':
-                    size==line[5]
-                    new_copy_number==line[6]
+                    size=line[5]
+                    new_copy_number=line[6]
                 elif mut_type=='CON':
-                    size==line[5]
-                    region==line[6]
+                    size=line[5]
+                    region=line[6]
                 elif mut_type=='INV':
-                    size==line[5]
-
+                    size=line[5]
+    #for key in fname.keys()[:10]:
+         #print fname[key]
     #mutations[mut_id]={'type': mut_type, 'parents': parent_ids, ...)
     #what is function of above line?
 
