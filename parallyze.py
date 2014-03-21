@@ -105,32 +105,47 @@ def proc1(conf):
                 position=line[4]
                 data = {}
                 data['mut_type'] = mut_type
+                data['mut_id'] = mut_id
                 data['parent_ids'] = parent_ids
-                # and so on
+                data['seq_id'] = seq_id
+                data['position'] = position
                 if mut_type=='SNP':
                     new_se=line[5]
                     data['new_se'] = new_se
                     mutations[fname][mut_id] = data
                 elif mut_type=='SUB':
                     size=line[5]
-                    new_se==line[6]
+                    new_se=line[6]
                     # same as above with data and adding to mutations
+                    data['size'] = size
+                    data['new_se'] = new_se
                 elif mut_type=='DEL':
                     size=line[5]
+                    data['size'] = size
                 elif mut_type=='INS':
                     new_seq=line[5]
+                    data['new_seq'] = new_seq
                 elif mut_type=='MOB':
                     repeat_nam=line[5]
                     strand=line[6]
                     duplication_size=line[7]
+                    data['repeat_nam'] = repeat_nam
+                    data['strand'] = strand
+                    data['duplication_size'] = duplication_size
                 elif mut_type=='AMP':
                     size=line[5]
                     new_copy_number=line[6]
+                    data['size'] = size
+                    data['new_copy_number'] = new_copy_number
                 elif mut_type=='CON':
                     size=line[5]
                     region=line[6]
+                    data['size'] = size
+                    data['region'] = region
                 elif mut_type=='INV':
                     size=line[5]
+                    data['size'] = size
+                mutations[fname][mut_id] = data
     #for key in fname.keys()[:10]:
          #print fname[key]
     #mutations[mut_id]={'type': mut_type, 'parents': parent_ids, ...)
