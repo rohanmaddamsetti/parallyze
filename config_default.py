@@ -1,6 +1,6 @@
 #Configuration file default and test
 
-PROCEDURE = '3'
+PROCEDURE = '2'
 
 REF_GENOME = '''
 /Users/elizabethbaird/Desktop/parallyze/reference.gb
