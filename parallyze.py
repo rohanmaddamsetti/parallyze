@@ -89,9 +89,13 @@ def proc1(conf):
     #loop over conf['diffs'] for each file
     #fp=open(conf['diffs']) #maybe 'with' puts out nice error messages without it dying
     for fname in conf['diffs']:
+        mutations[fname] = {}
         with open(fname) as fp:
             for line in fp: 
-                if line.startswith('#' or 'JC' or 'RA' or 'UN'):
+                if line.startswith('#') or \
+                    line.startswith('JC') or \
+                    line.startswith('RA') or \
+                    line.startswith('UN'):
                     continue
                 line=line.split()
                 mut_type=line[0]
@@ -99,11 +103,18 @@ def proc1(conf):
                 parent_ids=line[2].split(',')
                 seq_id=line[3]
                 position=line[4]
+                data = {}
+                data['mut_type'] = mut_type
+                data['parent_ids'] = parent_ids
+                # and so on
                 if mut_type=='SNP':
                     new_se=line[5]
+                    data['new_se'] = new_se
+                    mutations[fname][mut_id] = data
                 elif mut_type=='SUB':
                     size=line[5]
                     new_se==line[6]
+                    # same as above with data and adding to mutations
                 elif mut_type=='DEL':
                     size=line[5]
                 elif mut_type=='INS':
