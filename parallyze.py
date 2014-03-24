@@ -49,11 +49,8 @@ def get_config():
         conf['procedure'] = config_default.PROCEDURE
         conf['diffs'] = config_default.GENOME_DIFFS
         return conf
-   # print class (conf['diffs'])
 
 get_config()
-
-#fp=open(filename, 'rU')
 
 def base_to_int(i):
     if i == 'A':
@@ -83,12 +80,9 @@ def int_to_seq(seq):
     converted_to_seq=[int_to_base(b) for b in seq]
     return converted_to_seq
 
-def proc1(conf):
-    mutlist=[]
+def parse_gdfiles(filenames): #you'll need to pass in conf['diffs']
     mutations={}
-    #loop over conf['diffs'] for each file
-    #fp=open(conf['diffs']) #maybe 'with' puts out nice error messages without it dying
-    for fname in conf['diffs']:
+    for fname in filenames:
         mutations[fname] = {}
         with open(fname) as fp:
             for line in fp: 
@@ -110,46 +104,31 @@ def proc1(conf):
                 data['seq_id'] = seq_id
                 data['position'] = position
                 if mut_type=='SNP':
-                    new_se=line[5]
-                    data['new_se'] = new_se
-                    mutations[fname][mut_id] = data
+                    data['new_se'] =line[5] 
                 elif mut_type=='SUB':
-                    size=line[5]
-                    new_se=line[6]
-                    # same as above with data and adding to mutations
-                    data['size'] = size
-                    data['new_se'] = new_se
+                    data['size'] = line[5]
+                    data['new_se'] = line[6]
                 elif mut_type=='DEL':
-                    size=line[5]
-                    data['size'] = size
+                    data['size'] = line[5]
                 elif mut_type=='INS':
-                    new_seq=line[5]
-                    data['new_seq'] = new_seq
+                    data['new_seq'] = line[5]
                 elif mut_type=='MOB':
-                    repeat_nam=line[5]
-                    strand=line[6]
-                    duplication_size=line[7]
-                    data['repeat_nam'] = repeat_nam
-                    data['strand'] = strand
-                    data['duplication_size'] = duplication_size
+                    data['repeat_nam'] = line[5]
+                    data['strand'] = line[6]
+                    data['duplication_size'] = line[7]
                 elif mut_type=='AMP':
-                    size=line[5]
-                    new_copy_number=line[6]
-                    data['size'] = size
-                    data['new_copy_number'] = new_copy_number
+                    data['size'] = line[5]
+                    data['new_copy_number'] = line[6]
                 elif mut_type=='CON':
-                    size=line[5]
-                    region=line[6]
-                    data['size'] = size
-                    data['region'] = region
+                    data['size'] = line[5]
+                    data['region'] = line[6]
                 elif mut_type=='INV':
-                    size=line[5]
-                    data['size'] = size
+                    data['size'] = line[5]
                 mutations[fname][mut_id] = data
-    #for key in fname.keys()[:10]:
-         #print fname[key]
-    #mutations[mut_id]={'type': mut_type, 'parents': parent_ids, ...)
-    #what is function of above line?
+    dbg_dict = mutations[mutations.keys()[0]] 
+    for f_mutid in dbg_dict.keys()[:2]:
+        print dbg_dict[f_mutid]
+    return mutations
 
 def proc3(conf):
     print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
