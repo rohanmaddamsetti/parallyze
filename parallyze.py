@@ -80,7 +80,7 @@ def int_to_seq(seq):
     converted_to_seq=[int_to_base(b) for b in seq]
     return converted_to_seq
 
-def parse_gdfiles(filenames): #you'll need to pass in conf['diffs']
+def parse_gdfiles(filenames): #change filenames
     mutations={}
     for fname in filenames:
         mutations[fname] = {}
@@ -125,10 +125,18 @@ def parse_gdfiles(filenames): #you'll need to pass in conf['diffs']
                 elif mut_type=='INV':
                     data['size'] = line[5]
                 mutations[fname][mut_id] = data
-    dbg_dict = mutations[mutations.keys()[0]] 
-    for f_mutid in dbg_dict.keys()[:2]:
-        print dbg_dict[f_mutid]
+    dbug_dict = mutations[mutations.keys()[0]] 
+    for f_mutid in dbug_dict.keys()[:2]:
+        print dbug_dict[f_mutid]
     return mutations
+
+def snpcount(mutdict):
+    for fname in mutdict:
+        
+        for data['new_se']:
+
+def proc1(conf):
+    parse_gdfiles
 
 def proc3(conf):
     print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
