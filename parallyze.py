@@ -37,7 +37,7 @@ def get_config():
         assert ref.endswith('.gb' or '.gbk')
         diffs = file_list(config.GENOME_DIFFS)
 	assert len(diffs)!=0
-        for diff_file in diffs:   #annotated vs. non-annotated genomediff files
+        for diff_file in diffs:   
 	     assert diff_file.endswith('.gd')
         conf['ref'] = ref
         conf['procedure'] = config.PROCEDURE
@@ -119,7 +119,7 @@ def parse_gdfiles(filenames): #change filenames - conf['diffs']
                 elif mut_type=='AMP':
                     data['size'] = line[5]
                     data['new_copy_number'] = line[6]
-                elif mut_type=='CON':
+                elif mut_type=='CON':data
                     data['size'] = line[5]
                     data['region'] = line[6]
                 elif mut_type=='INV':
@@ -142,11 +142,12 @@ def snpcount(filename): #conf['ref']
                 d[old_base][new_base] = d[old_base].get(new_base,0) + 1
     return mutmatrix
 
-def snpmutate (filename): #conf['ref']
+def snpmutate (filename): #conf['ref']  #throw error if non-annotated genomediff?
     pass
 
 def proc1(conf):
     parse_gdfiles
+    snpcount
 
 def proc3(conf):
     print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
