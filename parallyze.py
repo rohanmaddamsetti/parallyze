@@ -130,19 +130,20 @@ def parse_gdfiles(filenames): #change filenames - conf['diffs']
         print dbug_dict[f_mutid]
     return mutations
 
-def snpcount(mutations):
-    init_base={}
-    init_base={'A', 'G', 'C', 'T'}
-    init_base[end_base] = {}
-    end_base={'A':0, 'G':0, 'C':0, 'T':0}
+def snpcount(filename): #conf['ref']
+    mutmatrix = {}
     for fname in mutations:
+        init_base={}
+        init_base={'A':{}, 'G':{}, 'C':{}, 'T':{}}
         for mutdict in fname:
             if data['mut_type']=='SNP':
-                position_base = conf['ref'][data['position']]
-        #d[old][new] = d[old].get(new,0)
-        #add one (1) to appropriate init_base[end_base] dict for each mutdict
-        #must be way to do w/o lots of if/elif iterations.
-        #based on its quality, add its data to particular dictionary 
+                old_base = conf['ref'][data['position']]
+                new_base = data['new_se']
+                d[old_base][new_base] = d[old_base].get(new_base,0) + 1
+    return mutmatrix
+
+def snpmutate (filename): #conf['ref']
+    pass
 
 def proc1(conf):
     parse_gdfiles
