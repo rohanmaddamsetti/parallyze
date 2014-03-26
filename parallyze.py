@@ -80,7 +80,7 @@ def int_to_seq(seq):
     converted_to_seq=[int_to_base(b) for b in seq]
     return converted_to_seq
 
-def parse_gdfiles(filenames): #change filenames
+def parse_gdfiles(filenames): #change filenames - conf['diffs']
     mutations={}
     for fname in filenames:
         mutations[fname] = {}
@@ -130,10 +130,19 @@ def parse_gdfiles(filenames): #change filenames
         print dbug_dict[f_mutid]
     return mutations
 
-def snpcount(mutdict):
-    for fname in mutdict:
-        
-        for data['new_se']:
+def snpcount(mutations):
+    init_base={}
+    init_base={'A', 'G', 'C', 'T'}
+    init_base[end_base] = {}
+    end_base={'A':0, 'G':0, 'C':0, 'T':0}
+    for fname in mutations:
+        for mutdict in fname:
+            if data['mut_type']=='SNP':
+                position_base = conf['ref'][data['position']]
+        #d[old][new] = d[old].get(new,0)
+        #add one (1) to appropriate init_base[end_base] dict for each mutdict
+        #must be way to do w/o lots of if/elif iterations.
+        #based on its quality, add its data to particular dictionary 
 
 def proc1(conf):
     parse_gdfiles
