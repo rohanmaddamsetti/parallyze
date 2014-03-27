@@ -104,7 +104,9 @@ def parse_gdfiles(filenames): #change filenames - conf['diffs']
                 data['seq_id'] = seq_id
                 data['position'] = position
                 if mut_type=='SNP':
-                    data['new_se'] =line[5] 
+                    data['new_se'] =line[5]
+                    data['codon_pos'] = line[11]
+                    data['codon_ref_seq'] = line[12] 
                 elif mut_type=='SUB':
                     data['size'] = line[5]
                     data['new_se'] = line[6]
@@ -119,7 +121,7 @@ def parse_gdfiles(filenames): #change filenames - conf['diffs']
                 elif mut_type=='AMP':
                     data['size'] = line[5]
                     data['new_copy_number'] = line[6]
-                elif mut_type=='CON':data
+                elif mut_type=='CON':
                     data['size'] = line[5]
                     data['region'] = line[6]
                 elif mut_type=='INV':
@@ -144,6 +146,7 @@ def snpcount(filename): #conf['ref']
 
 def snpmutate (filename): #conf['ref']  #throw error if non-annotated genomediff?
     pass
+    for range in 
 
 def proc1(conf):
     parse_gdfiles
