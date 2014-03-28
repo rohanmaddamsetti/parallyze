@@ -146,16 +146,16 @@ def parse_gdfiles(filenames): #change filenames - conf['diffs']
     return mutations
 
 def snpcount(filename): #conf['ref']
-    mutmatrix = {}
+    mutmatrix = {} #should be array. append dicts of dicts to the array
     for fname in mutations:
         init_base={}
-        init_base={'A':{}, 'G':{}, 'C':{}, 'T':{}}
+        init_base={'A':'{'G':0, 'C':0, 'T':0}, 'G':{}, 'C':{}, 'T':{}}
         for mutdict in fname:
             if data['mut_type']=='SNP':
                 old_base = conf['ref'][data['position']]
                 new_base = data['new_se']
                 d[old_base][new_base] = d[old_base].get(new_base,0) + 1
-    return mutmatrix
+    return mutmatrix #this doesn't add anything to mutmatrix
 
 def snpmutate (filename): #conf['ref']  #throw error if non-annotated genomediff?
     pass
@@ -165,7 +165,8 @@ def gds_gene_rank():
     mut_genes = {}
     for fname in filenames:
         if data['mut_type'] == 'SNP':
-            [data['gene_name']] = 0
+            gene_name = data['gene_name']
+            d[gene_name] = d[gene_name].get() + 1
 
 def proc1(conf):
     parse_gdfiles
