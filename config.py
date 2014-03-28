@@ -11,4 +11,6 @@ REF_GENOME = '''
 
 GENOME_DIFFS = '''
 /Users/Elizabeth/parallyze/Ara-1_40K_10938_annotated.gd
+/Users/Elizabeth/parallyze/Ara-2_40K_11035_annotated.gd
+/Users/Elizabeth/parallyze/Ara-3_40K_10979_annotated.gd
 '''

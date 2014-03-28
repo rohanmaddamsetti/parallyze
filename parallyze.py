@@ -91,44 +91,53 @@ def parse_gdfiles(filenames): #change filenames - conf['diffs']
                     line.startswith('RA') or \
                     line.startswith('UN'):
                     continue
-                line=line.split()
-                mut_type=line[0]
-                mut_id=line[1]
-                parent_ids=line[2].split(',')
-                seq_id=line[3]
-                position=line[4]
+                line = line.split()
+                mut_type = line[0]
+                mut_id = line[1]
+                parent_ids = line[2].split(',')
+                seq_id = line[3]
+                position = line[4]
                 data = {}
                 data['mut_type'] = mut_type
                 data['mut_id'] = mut_id
                 data['parent_ids'] = parent_ids
                 data['seq_id'] = seq_id
                 data['position'] = position
-                if mut_type=='SNP':
-                    data['new_se'] =line[5]
-                    key,_,value = line[11].partition('=')
-                    data['codon_position'] = int(value)-1
+                if mut_type == 'SNP':
+                    data['new_se'] = line[5]
                     key,_,value = line[12].partition('=')
-                    data['codon_ref_seq'] = value
-                    data['gene_name'] = line[15]
-                    data['gene_product'] = line[17]
-                elif mut_type=='SUB':
+                    if key == 'codon_ref_seq': #intragenic SNPs
+                        data[key] = value
+                        key,_,value = line[11].partition('=')
+                        data['codon_position'] = int(value)-1
+                        key,_,value = line[15].partition('=')
+                        data['gene_name'] = value
+                        key,_,value = line[17].partition('=')
+                        data['gene_product'] = value
+                    elif key == 'snp_type': #intergenic SNPs
+                        data[key] = value
+                        key,_,value = line[8].partition['=']
+                        data['gene_position'] = value
+                        key,_,value = line[9].partition['=']
+                        data['gene_product'] = value
+                elif mut_type == 'SUB':
                     data['size'] = line[5]
                     data['new_se'] = line[6]
-                elif mut_type=='DEL':
+                elif mut_type == 'DEL':
                     data['size'] = line[5]
                 elif mut_type=='INS':
                     data['new_seq'] = line[5]
-                elif mut_type=='MOB':
+                elif mut_type == 'MOB':
                     data['repeat_nam'] = line[5]
                     data['strand'] = line[6]
                     data['duplication_size'] = line[7]
-                elif mut_type=='AMP':
+                elif mut_type == 'AMP':
                     data['size'] = line[5]
                     data['new_copy_number'] = line[6]
-                elif mut_type=='CON':
+                elif mut_type == 'CON':
                     data['size'] = line[5]
                     data['region'] = line[6]
-                elif mut_type=='INV':
+                elif mut_type == 'INV':
                     data['size'] = line[5]
                 mutations[fname][mut_id] = data
     dbug_dict = mutations[mutations.keys()[0]] 
@@ -151,8 +160,12 @@ def snpcount(filename): #conf['ref']
 def snpmutate (filename): #conf['ref']  #throw error if non-annotated genomediff?
     pass
 
-def gds_gene_rank:
+def gds_gene_rank():
     pass
+    mut_genes = {}
+    for fname in filenames:
+        if data['mut_type'] == 'SNP':
+            [data['gene_name']] = 0
 
 def proc1(conf):
     parse_gdfiles
