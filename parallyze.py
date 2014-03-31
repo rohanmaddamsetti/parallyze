@@ -14,7 +14,6 @@ from Bio.Seq import MutableSeq
 
 from numpy import random
 
-
 def file_list(fs):
     flist = fs.split()
     for f in flist:
@@ -26,7 +25,7 @@ def get_config():
     if config.PROCEDURE == '3':
         ref = config.REF_GENOME.strip()
         assert os.path.isfile(ref)
-        assert ref.endswith('.gb' or '.gbk') 
+        assert ref.endswith('.gb') or ref.endswith('.gbk') 
         conf['procedure'] = config.PROCEDURE
 	conf['ref'] = ref
 	assert len(config.GENOME_DIFFS.strip())==0
@@ -34,11 +33,11 @@ def get_config():
     elif config.PROCEDURE in ['1','2','4','5']:  
         ref = config.REF_GENOME.strip()
         assert os.path.isfile(ref)
-        assert ref.endswith('.gb' or '.gbk')
+        assert ref.endswith('.gb') or ref.endswith('.gbk')
         diffs = file_list(config.GENOME_DIFFS)
-	assert len(diffs)!=0
+	    assert len(diffs)!=0
         for diff_file in diffs:   
-	     assert diff_file.endswith('.gd')
+	        assert diff_file.endswith('.gd')
         conf['ref'] = ref
         conf['procedure'] = config.PROCEDURE
         conf['diffs'] = diffs
@@ -49,8 +48,6 @@ def get_config():
         conf['procedure'] = config_default.PROCEDURE
         conf['diffs'] = config_default.GENOME_DIFFS
         return conf
-
-get_config()
 
 def base_to_int(i):
     if i == 'A':
@@ -79,6 +76,10 @@ def seq_to_int(seq):
 def int_to_seq(seq):
     converted_to_seq=[int_to_base(b) for b in seq]
     return converted_to_seq
+
+def parse_confref():
+    pass
+    #biopython seqio
 
 def parse_gdfiles(filenames): #change filenames - conf['diffs']
     mutations={}
@@ -114,12 +115,14 @@ def parse_gdfiles(filenames): #change filenames - conf['diffs']
                         data['gene_name'] = value
                         key,_,value = line[17].partition('=')
                         data['gene_product'] = value
+                        data['old_base'] = data['codon_ref_seq'][data['codon_position']]
                     elif key == 'snp_type': #intergenic SNPs
                         data[key] = value
                         key,_,value = line[8].partition['=']
                         data['gene_position'] = value
                         key,_,value = line[9].partition['=']
                         data['gene_product'] = value
+                       # data['old_base'] = conf['ref'][data['position']]
                 elif mut_type == 'SUB':
                     data['size'] = line[5]
                     data['new_se'] = line[6]
@@ -148,13 +151,14 @@ def parse_gdfiles(filenames): #change filenames - conf['diffs']
 def snpcount(diff_dict): #conf['ref'] or 'mutations'
     #put in comment with what input and output are
     mutmatrix = {} #should be array. append dicts of dicts to the array
-    for diff_name, mutdict in diff_dict.iteritems(): #difference btwn .keys() and .iteritems()?
+    for diff_name, mutdict in diff_dict.iteritems(): 
         init_base={'A':{'G':0, 'C':0, 'T':0}, 'G':{'A':0, 'C':0, 'T':0}, 'C':{'A':0, 'G':0, 'T':0}, 'T':{'A':0, 'C':0, 'G':0}}
         for mutation_key, data in mutdict.iteritems():
             if data['mut_type']=='SNP':
-                # old_base = data['old_base'] :fix above stuff w/ annotation
+                old_base = data['old_base']
                 # old_base = conf['ref'][data['position']]
                 new_base = data['new_se']
+                #say that contents are int() to do next line?
                 init_base[old_base][new_base] = init_base[old_base].get(new_base,0) + 1
         print init_base
         mutmatrix[diff_name] = init_base
@@ -169,11 +173,11 @@ def gds_gene_rank():
     for fname in filenames:
         if data['mut_type'] == 'SNP':
             gene_name = data['gene_name']
-            d[gene_name] = d[gene_name].get() + 1
+            data[gene_name] = data[gene_name].get(gene_name,0) + 1
 
 def proc1(conf):
-    parse_gdfiles
-    snpcount
+    mutations = parse_gdfiles(conf['diffs'])
+    snpcount(mutations)
 
 def proc3(conf):
     print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
