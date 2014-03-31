@@ -145,16 +145,19 @@ def parse_gdfiles(filenames): #change filenames - conf['diffs']
         print dbug_dict[f_mutid]
     return mutations
 
-def snpcount(filename): #conf['ref']
+def snpcount(diff_dict): #conf['ref'] or 'mutations'
+    #put in comment with what input and output are
     mutmatrix = {} #should be array. append dicts of dicts to the array
-    for fname in mutations:
-        init_base={}
-        init_base={'A':'{'G':0, 'C':0, 'T':0}, 'G':{}, 'C':{}, 'T':{}}
-        for mutdict in fname:
+    for diff_name, mutdict in diff_dict.iteritems(): #difference btwn .keys() and .iteritems()?
+        init_base={'A':{'G':0, 'C':0, 'T':0}, 'G':{'A':0, 'C':0, 'T':0}, 'C':{'A':0, 'G':0, 'T':0}, 'T':{'A':0, 'C':0, 'G':0}}
+        for mutation_key, data in mutdict.iteritems():
             if data['mut_type']=='SNP':
-                old_base = conf['ref'][data['position']]
+                # old_base = data['old_base'] :fix above stuff w/ annotation
+                # old_base = conf['ref'][data['position']]
                 new_base = data['new_se']
-                d[old_base][new_base] = d[old_base].get(new_base,0) + 1
+                init_base[old_base][new_base] = init_base[old_base].get(new_base,0) + 1
+        print init_base
+        mutmatrix[diff_name] = init_base
     return mutmatrix #this doesn't add anything to mutmatrix
 
 def snpmutate (filename): #conf['ref']  #throw error if non-annotated genomediff?
