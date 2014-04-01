@@ -35,7 +35,7 @@ def get_config():
         assert os.path.isfile(ref)
         assert ref.endswith('.gb') or ref.endswith('.gbk')
         diffs = file_list(config.GENOME_DIFFS)
-	    assert len(diffs)!=0
+        assert len(diffs)!=0
         for diff_file in diffs:   
 	        assert diff_file.endswith('.gd')
         conf['ref'] = ref
@@ -77,11 +77,42 @@ def int_to_seq(seq):
     converted_to_seq=[int_to_base(b) for b in seq]
     return converted_to_seq
 
-def parse_confref():
-    pass
-    #biopython seqio
+def parse_ref(ref_file):
+    conf = get_config()
 
-def parse_gdfiles(filenames): #change filenames - conf['diffs']
+    '''
+    SeqIO.parse is an iterator and so has a method named "next"
+    which is called when you use it in a for loop, ie:
+    for record in SeqIO.parse(stuff):
+        do stuff
+    We can call it explicitly, once, because we're assuming there is only
+    one record in the SeqIO iterator. We will be *very* explicit and store
+    the iterator itself as it, then  call next() on it like so:
+    '''
+    it = SeqIO.parse(ref_file, "genbank")
+    record = it.next() 
+
+    # convert the biopython Seq object to a python string
+    refseq = list(str(record.seq))
+    length=len(refseq)
+    ## print 'Seq as list [truncated]:', refseq[:5000], '...'
+    
+    countA=refseq.count('A') #possibly change to 0,1,2,3
+    countG=refseq.count('G')
+    countC=refseq.count('C')
+    countT=refseq.count('T')
+    print '\n', 'Base distribution in reference: '
+    print 'A:', countA, '   G:', countG, '   C:', countC, '   T:', countT
+
+    # or do seq = ''.join(seq) to save it as a string and overwrite the list
+    ##print 'Seq as string [truncated]:', ''.join(seq)[:1000], '...'
+    print "Number of bases: ", length
+    print 'Seq as condensed string:', ''.join(refseq)[0:100], '...', ''.join(refseq)[length-100:length] 
+    print
+
+    return refseq
+
+def parse_gdfiles(filenames, refseq): 
     mutations={}
     for fname in filenames:
         mutations[fname] = {}
@@ -122,7 +153,7 @@ def parse_gdfiles(filenames): #change filenames - conf['diffs']
                         data['gene_position'] = value
                         key,_,value = line[9].partition['=']
                         data['gene_product'] = value
-                       # data['old_base'] = conf['ref'][data['position']]
+                        data['old_base'] = refseq[data['position']]
                 elif mut_type == 'SUB':
                     data['size'] = line[5]
                     data['new_se'] = line[6]
@@ -144,25 +175,25 @@ def parse_gdfiles(filenames): #change filenames - conf['diffs']
                     data['size'] = line[5]
                 mutations[fname][mut_id] = data
     dbug_dict = mutations[mutations.keys()[0]] 
-    for f_mutid in dbug_dict.keys()[:2]:
-        print dbug_dict[f_mutid]
+    for f_mutid in dbug_dict.keys()[:5]:
+        print dbug_dict[f_mutid], '\n'
     return mutations
 
-def snpcount(diff_dict): #conf['ref'] or 'mutations'
+def snpcount(diff_dict): #diff_dict = 'mutations'
     #put in comment with what input and output are
     mutmatrix = {} #should be array. append dicts of dicts to the array
     for diff_name, mutdict in diff_dict.iteritems(): 
-        init_base={'A':{'G':0, 'C':0, 'T':0}, 'G':{'A':0, 'C':0, 'T':0}, 'C':{'A':0, 'G':0, 'T':0}, 'T':{'A':0, 'C':0, 'G':0}}
+        init_base={'A':{'G':0, 'C':0, 'T':0}, 'G':{'A':0, 'C':0, 'T':0},\
+            'C':{'A':0, 'G':0, 'T':0}, 'T':{'A':0, 'C':0, 'G':0}}
         for mutation_key, data in mutdict.iteritems():
             if data['mut_type']=='SNP':
                 old_base = data['old_base']
                 # old_base = conf['ref'][data['position']]
                 new_base = data['new_se']
-                #say that contents are int() to do next line?
                 init_base[old_base][new_base] = init_base[old_base].get(new_base,0) + 1
         print init_base
         mutmatrix[diff_name] = init_base
-    return mutmatrix #this doesn't add anything to mutmatrix
+    return mutmatrix 
 
 def snpmutate (filename): #conf['ref']  #throw error if non-annotated genomediff?
     pass
@@ -176,42 +207,18 @@ def gds_gene_rank():
             data[gene_name] = data[gene_name].get(gene_name,0) + 1
 
 def proc1(conf):
-    mutations = parse_gdfiles(conf['diffs'])
+    refseq = parse_ref(conf['ref'])
+    mutations = parse_gdfiles(conf['diffs'],conf['ref'])
     snpcount(mutations)
 
 def proc3(conf):
-    print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral' '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another', '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome', '\n', 'There is only one chromosome', '\n'
+    print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral'\
+        '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another',\
+        '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome',\
+        '\n', 'There is only one chromosome', '\n'
     lines=input("How many lines?  ")
     gens=input("How many generations? ")
     reps=input("How many replicates?  ")
-
-    '''
-    SeqIO.parse is an iterator and so has a method named "next"
-    which is called when you use it in a for loop, ie:
-    for record in SeqIO.parse(stuff):
-        do stuff
-    We can call it explicitly, once, because we're assuming there is only
-    one record in the SeqIO iterator. We will be *very* explicit and store
-    the iterator itself as it, then  call next() on it like so:
-    '''
-    it = SeqIO.parse(conf['ref'], "genbank")
-    record = it.next() 
-
-    # convert the biopython Seq object to a python string
-    seq = list(str(record.seq))
-    length=len(seq)
-    ## print 'Seq as list [truncated]:', seq[:5000], '...'
-    
-    countA=seq.count('A') #possibly change to 0,1,2,3
-    countG=seq.count('G')
-    countC=seq.count('C')
-    countT=seq.count('T')
-    print 'A:', countA, '   G:', countG, '   C:', countC, '   T:', countT
-
-    # or do seq = ''.join(seq) to save it as a string and overwrite the list
-    ##print 'Seq as string [truncated]:', ''.join(seq)[:1000], '...'
-    print "Number of bases: ", length
-    print 'Seq as condensed string:', ''.join(seq)[0:100], '...', ''.join(seq)[length-100:length] 
 
 def main():
     parser = argparse.ArgumentParser()
@@ -224,7 +231,7 @@ def main():
 	print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref']
 	proc3(conf)
     else: 
-        print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs']
+        print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs'], '\n'
 	if conf['procedure']=='1':
 	    proc1(conf)
 	elif conf['procedure']=='2':
