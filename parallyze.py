@@ -137,14 +137,15 @@ def parse_gdfiles(filenames, refseq):
                     print '*' * 40
                     for pair in line[6:]:
                         key,_,value = pair.partition('=')
-                        data[key] = value
+                        data[key.strip()] = value.strip()
                         print key, value
                     print '*' * 40
-                    if data['snp_type'] == 'intragenic':
+                    if data['snp_type'] == 'nonsynonymous':
                         data['codon_position'] = int(data['codon_position'])-1
                         data['old_base'] = data['codon_ref_seq'][data['codon_position']]
                     elif data['snp_type'] == 'intergenic':
-                        data['gene_position'] = int(data['gene_position'])
+                        # this may need to be processed further (it's a tuple of some sort)
+                        data['gene_position'] = data['gene_position']
                         data['gene_product'] = value
                         data['old_base'] = refseq[data['position']]
                     else:
