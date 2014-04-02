@@ -1,13 +1,13 @@
 #Configuration file default and test
 
-PROCEDURE = '2'
+PROCEDURE = '1'
 
 REF_GENOME = '''
-/Users/elizabethbaird/Desktop/parallyze/reference.gb
+/Users/Elizabeth/parallyze/reference.gbk
 '''
 
 GENOME_DIFFS = '''
-/Users/elizabethbaird/Desktop/parallyze/Ara+3_REL10953.gd
-/Users/elizabethbaird/Desktop/parallyze/Ara+3_REL10954.gd
-/Users/elizabethbaird/Desktop/parallyze/Ara+6_REL10985.gd
+/Users/Elizabeth/parallyze/Ara-1_40K_10938_annotated.gd
+/Users/Elizabeth/parallyze/Ara-2_40K_11035_annotated.gd
+/Users/Elizabeth/parallyze/Ara-3_40K_10979_annotated.gd
 '''

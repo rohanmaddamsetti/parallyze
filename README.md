@@ -6,6 +6,8 @@ You will need to install Biopython before running this program. Either do the fo
     sudo pip install biopython
     sudo pip install numpy
 
+Before running this program, ensure you have appropriately filled out your configuration file with a Genbank-formatted reference genome and annotated genome diff files (http://barricklab.org/twiki/bin/view/Lab/ToolsBacterialGenomeResequencing, 'ANNOTATE' command in gdtools). 
+
 To run the program, type this into the command line:
 
     python parallyze.py
