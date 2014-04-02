@@ -93,7 +93,8 @@ def parse_ref(ref_file):
     record = it.next() 
 
     # convert the biopython Seq object to a python string
-    refseq = list(str(record.seq))
+    # refseq = list(str(record.seq))
+    refseq = str(record.seq)
     length=len(refseq)
     ## print 'Seq as list [truncated]:', refseq[:5000], '...'
     
@@ -113,9 +114,9 @@ def parse_ref(ref_file):
     return refseq
 
 def parse_gdfiles(filenames, refseq): 
-    mutations={}
+    alldiffs={}
     for fname in filenames:
-        mutations[fname] = {}
+        alldiffs[fname] = []
         with open(fname) as fp:
             for line in fp: 
                 if line.startswith('#') or \
@@ -124,19 +125,16 @@ def parse_gdfiles(filenames, refseq):
                     line.startswith('UN'):
                     continue
                 line = line.split()
+                data = {}
                 mut_type = line[0]
                 mut_id = line[1]
-                parent_ids = line[2].split(',')
-                seq_id = line[3]
-                position = line[4]
-                data = {}
-                data['mut_type'] = mut_type
-                data['mut_id'] = mut_id
-                data['parent_ids'] = parent_ids
-                data['seq_id'] = seq_id
-                data['position'] = position
+                data['mut_type'] = line[0]
+                data['mut_id'] = line[1]
+                data['parent_ids'] = line[2].split(',')
+                data['seq_id'] = line[3]
+                data['position'] = int(line[4])
                 if mut_type == 'SNP':
-                    data['new_se'] = line[5]
+                    data['new_seq'] = line[5]
                     key,_,value = line[12].partition('=')
                     if key == 'codon_ref_seq': #intragenic SNPs
                         data[key] = value
@@ -150,50 +148,57 @@ def parse_gdfiles(filenames, refseq):
                     elif key == 'snp_type': #intergenic SNPs
                         data[key] = value
                         key,_,value = line[8].partition['=']
-                        data['gene_position'] = value
+                        data['gene_position'] = int(value)
                         key,_,value = line[9].partition['=']
                         data['gene_product'] = value
                         data['old_base'] = refseq[data['position']]
+                    else:
+                        data['fail'] = 'Heeeeelllp!'
                 elif mut_type == 'SUB':
-                    data['size'] = line[5]
-                    data['new_se'] = line[6]
+                    data['size'] = int(line[5])
+                    data['new_seq'] = line[6]
                 elif mut_type == 'DEL':
-                    data['size'] = line[5]
+                    data['size'] = int(line[5])
                 elif mut_type=='INS':
                     data['new_seq'] = line[5]
                 elif mut_type == 'MOB':
-                    data['repeat_nam'] = line[5]
+                    data['repeat_name'] = line[5]
                     data['strand'] = line[6]
-                    data['duplication_size'] = line[7]
+                    data['duplication_size'] = int(line[7])
                 elif mut_type == 'AMP':
-                    data['size'] = line[5]
-                    data['new_copy_number'] = line[6]
+                    data['size'] = int(line[5])
+                    data['new_copy_number'] = int(line[6])
                 elif mut_type == 'CON':
-                    data['size'] = line[5]
+                    data['size'] = int(line[5])
                     data['region'] = line[6]
                 elif mut_type == 'INV':
-                    data['size'] = line[5]
-                mutations[fname][mut_id] = data
-    dbug_dict = mutations[mutations.keys()[0]] 
-    for f_mutid in dbug_dict.keys()[:5]:
-        print dbug_dict[f_mutid], '\n'
-    return mutations
+                    data['size'] = int(line[5])
+                #alldiffs[fname][mut_id] = data
+                alldiffs[fname].append(data)
+    #dbug_dict = alldiffs[alldiffs.keys()[0]] 
+    for k, mutation_list in alldiffs.iteritems():
+        print "the file name is: ", k
+        for i, mutation in enumerate(mutation_list):
+            if i < 5:
+                print mutation
+        #print dbug_dict[f_mutid], '\n'
+    return alldiffs
 
 def snpcount(diff_dict): #diff_dict = 'mutations'
+    #goal of snpcount
     #put in comment with what input and output are
-    mutmatrix = {} #should be array. append dicts of dicts to the array
-    for diff_name, mutdict in diff_dict.iteritems(): 
-        init_base={'A':{'G':0, 'C':0, 'T':0}, 'G':{'A':0, 'C':0, 'T':0},\
+    matrixdict = {}
+    for diff_name, mutlist in diff_dict.iteritems(): 
+        snpmatrix={'A':{'G':0, 'C':0, 'T':0}, 'G':{'A':0, 'C':0, 'T':0},\
             'C':{'A':0, 'G':0, 'T':0}, 'T':{'A':0, 'C':0, 'G':0}}
-        for mutation_key, data in mutdict.iteritems():
-            if data['mut_type']=='SNP':
-                old_base = data['old_base']
-                # old_base = conf['ref'][data['position']]
-                new_base = data['new_se']
-                init_base[old_base][new_base] = init_base[old_base].get(new_base,0) + 1
-        print init_base
-        mutmatrix[diff_name] = init_base
-    return mutmatrix 
+        for mutation in mutlist:
+            if mutation['mut_type']=='SNP':
+                old_base = mutation['old_base']
+                new_base = mutation['new_seq']
+                snpmatrix[old_base][new_base] = snpmatrix[old_base].get(new_base,0) + 1
+        #print init_base
+        matrixdict[diff_name] = snpmatrix
+    return matrixdict
 
 def snpmutate (filename): #conf['ref']  #throw error if non-annotated genomediff?
     pass
@@ -209,7 +214,10 @@ def gds_gene_rank():
 def proc1(conf):
     refseq = parse_ref(conf['ref'])
     mutations = parse_gdfiles(conf['diffs'],conf['ref'])
-    snpcount(mutations)
+    matrix = snpcount(mutations)
+    #return mutations
+    #return refseq
+    #return matrix
 
 def proc3(conf):
     print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral'\
