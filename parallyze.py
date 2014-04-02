@@ -135,8 +135,10 @@ def parse_gdfiles(filenames, refseq):
                 data['position'] = int(line[4])
                 if mut_type == 'SNP':
                     data['new_seq'] = line[5]
-                    key,_,value = line[12].partition('=')
-                    if key == 'codon_ref_seq': #intragenic SNPs
+                    #if key == 'codon_ref_seq': #intragenic SNPs
+                    if line[12].startswith('codon_ref_seq'):
+                        print 'intragenic SNP'
+                        key,_,value = line[12].partition('=')
                         data[key] = value
                         key,_,value = line[11].partition('=')
                         data['codon_position'] = int(value)-1
@@ -145,7 +147,9 @@ def parse_gdfiles(filenames, refseq):
                         key,_,value = line[17].partition('=')
                         data['gene_product'] = value
                         data['old_base'] = data['codon_ref_seq'][data['codon_position']]
-                    elif key == 'snp_type': #intergenic SNPs
+                    elif line[12] == 'snp_type=intergenic':
+                    #elif value == 'intergenic': #intergenic SNPs
+                        print 'intergenic SNP'
                         data[key] = value
                         key,_,value = line[8].partition['=']
                         data['gene_position'] = int(value)
@@ -153,6 +157,7 @@ def parse_gdfiles(filenames, refseq):
                         data['gene_product'] = value
                         data['old_base'] = refseq[data['position']]
                     else:
+                        print 'other SNP'
                         data['fail'] = 'Heeeeelllp!'
                 elif mut_type == 'SUB':
                     data['size'] = int(line[5])
