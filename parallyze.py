@@ -124,7 +124,7 @@ def parse_gdfiles(filenames, refseq):
                     line.startswith('RA') or \
                     line.startswith('UN'):
                     continue
-                line = line.split()
+                line = line.split('\t')
                 data = {}
                 mut_type = line[0]
                 mut_id = line[1]
@@ -133,29 +133,22 @@ def parse_gdfiles(filenames, refseq):
                 data['parent_ids'] = line[2].split(',')
                 data['seq_id'] = line[3]
                 data['position'] = int(line[4])
-                if mut_type == 'SNP':
-                    data['new_seq'] = line[5]
-                    key,_,value = line[12].partition('=')
-                    if key == 'codon_ref_seq': #intragenic SNPs
-                        print 'intragenic SNP'
+                if mut_type == 'SNP':   
+                    print '*' * 40
+                    for pair in line[6:]:
+                        key,_,value = pair.partition('=')
                         data[key] = value
-                        key,_,value = line[11].partition('=')
-                        data['codon_position'] = int(value)-1
-                        key,_,value = line[15].partition('=')
-                        data['gene_name'] = value
-                        key,_,value = line[17].partition('=')
-                        data['gene_product'] = value
+                        print key, value
+                    print '*' * 40
+                    if data['snp_type'] == 'intragenic':
+                        data['codon_position'] = int(data['codon_position'])-1
                         data['old_base'] = data['codon_ref_seq'][data['codon_position']]
-                    elif key == 'snp_type': #intergenic SNPs
-                        print 'intergenic SNP'
-                        data[key] = value
-                        key,_,value = line[8].partition['=']
-                        data['gene_position'] = int(value)
-                        key,_,value = line[9].partition['=']
+                    elif data['snp_type'] == 'intergenic':
+                        data['gene_position'] = int(data['gene_position'])
                         data['gene_product'] = value
                         data['old_base'] = refseq[data['position']]
                     else:
-                        data['fail'] = 'Heeeeelllp!'
+                        print 'ERROR parsing snp', data['snp_type']
                 elif mut_type == 'SUB':
                     data['size'] = int(line[5])
                     data['new_seq'] = line[6]
