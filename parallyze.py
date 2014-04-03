@@ -145,7 +145,7 @@ def parse_gdfiles(filenames, refseq):
                 data['position'] = int(line[4])-1
 
 #IS THE REFGENOME 0 OR 1 INDEXED? 1 indexed -- fixed
-#IS THIS THE APPROPRIATE REFGENOME? THERE ARE MULTIPLE -- problamente si
+#IS THIS THE APPROPRIATE REFGENOME? THERE ARE MULTIPLE - maybe? 
 #ARE SOME SNPS BASE(X) --> BASE(X) (PRINTOUT INDICATES YES) -- yeah, in genomediff
 
                 if mut_type == 'SNP':
@@ -189,15 +189,14 @@ def parse_gdfiles(filenames, refseq):
                     data['region'] = line[6]
                 elif mut_type == 'INV':
                     data['size'] = int(line[5])
-                #alldiffs[fname][mut_id] = data
                 alldiffs[fname].append(data)
-    #dbug_dict = alldiffs[alldiffs.keys()[0]] 
-    for gdname, mutation_list in alldiffs.iteritems():
-        print "File:", gdname
-        for list_position, mutation in enumerate(mutation_list):
-            if list_position < 1:
-                print "Mutation", list_position, "\n", str_keyvalue(mutation), "\n", "*" * 40
-        #print dbug_dict[f_mutid], '\n'
+    #for gdname, mutation_list in alldiffs.iteritems():
+        #print "File:", gdname
+        #for list_position, mutation in enumerate(mutation_list):
+            #if list_position < 1:
+                #print "Mutation", list_position, "\n", str_keyvalue(mutation), "\n", "*" * 40
+        ###print dbug_dict[f_mutid], '\n'
+        ###dbug_dict = alldiffs[alldiffs.keys()[0]] 
     return alldiffs
 
 def snpcount(diff_dict):
@@ -227,15 +226,27 @@ def snpmutate (filename1, filename2):  #throw error if non-annotated genomediff?
     also later: # of mutations per gene in reps, etc.'''
     pass
 
-def gds_gene_rank(mutationzz):
+def gds_gene_rank(mutations):
     '''input: mutations, from parse_gdfiles
     given user input #x, list x most mutated genes across all gdfiles'''
     pass
     mut_genes = {}
+    synonymous = input("Include synonymous mutations in the analysis? Y or N: ")
+    noncoding = input("Include noncoding SNPs in the analysis? Y or N: ")
+    pseudogene = input("Include SNPs in psuedogenes in the analysis? Y or N: ")
+    intergenic = input("Include intergenic SNPs in the analysis? Y or N: ")
     for fname in filenames:
         if data['mut_type'] == 'SNP':
-            gene_name = data['gene_name']
-            data[gene_name] = data[gene_name].get(gene_name,0) + 1
+            if data['snp_type'] == 'nonsynonymous':           
+                gene_name = data['gene_name']
+                data[gene_name] = data[gene_name].get(gene_name,0) + 1
+            elif data['snp_type'] == 'synonymous' and synonymous in ['Y','y']: 
+    #for time's sake, divide above into elif...: if...: ?
+    #incorporate continue
+                data[gene_name] = data[gene_name].get(gene_name,0) + 1
+            elif 
+    #diff btwn intergenic and noncoding? pseudogene? all exclusive? 
+
 
 def proc1(conf):
     refseq = parse_ref(conf['ref'])
