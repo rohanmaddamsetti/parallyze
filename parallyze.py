@@ -21,6 +21,7 @@ def file_list(fs):
     return flist
 
 def get_config():
+    #returns object that holds procedure name, ref file name, and diff file names
     conf={}
     if config.PROCEDURE == '3':
         ref = config.REF_GENOME.strip()
@@ -39,6 +40,7 @@ def get_config():
         for diff_file in diffs:   
 	        assert diff_file.endswith('.gd')
         conf['ref'] = ref
+    print refseq[10000]
         conf['procedure'] = config.PROCEDURE
         conf['diffs'] = diffs
         return conf
@@ -78,7 +80,8 @@ def int_to_seq(seq):
     return converted_to_seq
 
 def parse_ref(ref_file):
-    conf = get_config()
+    '''input:conf['ref'] 
+    #returns ref genome as a string 'refseq' '''
 
     '''
     SeqIO.parse is an iterator and so has a method named "next"
@@ -89,15 +92,16 @@ def parse_ref(ref_file):
     one record in the SeqIO iterator. We will be *very* explicit and store
     the iterator itself as it, then  call next() on it like so:
     '''
+
+    conf = get_config()
     it = SeqIO.parse(ref_file, "genbank")
     record = it.next() 
 
     # convert the biopython Seq object to a python string
     # refseq = list(str(record.seq))
-    refseq = str(record.seq)
-    length=len(refseq)
-    ## print 'Seq as list [truncated]:', refseq[:5000], '...'
-    
+    refseq = list(record.seq)
+    length=len(refseq)    
+
     countA=refseq.count('A') #possibly change to 0,1,2,3
     countG=refseq.count('G')
     countC=refseq.count('C')
@@ -113,7 +117,14 @@ def parse_ref(ref_file):
 
     return refseq
 
-def parse_gdfiles(filenames, refseq): 
+def str_keyvalue(data):
+    s = '\n'.join([str(key)+': '+str(data[key]) for key in data])
+    return s
+
+def parse_gdfiles(filenames, refseq):
+    '''input: conf['diffs'] and conf['ref']
+    :returns dict of gdfile names, each of which contains a list of sequential #s;
+    each # corresponds to a dictionary for each mutation (contains key and value)''' 
     alldiffs={}
     for fname in filenames:
         alldiffs[fname] = []
@@ -133,23 +144,19 @@ def parse_gdfiles(filenames, refseq):
                 data['parent_ids'] = line[2].split(',')
                 data['seq_id'] = line[3]
                 data['position'] = int(line[4])
-                if mut_type == 'SNP':   
-                    print '*' * 40
+                if mut_type == 'SNP':
+                    data['new_base'] = line[5]
                     for pair in line[6:]:
                         key,_,value = pair.partition('=')
                         data[key.strip()] = value.strip()
-                        print key, value
-                    print '*' * 40
-                    if data['snp_type'] == 'nonsynonymous':
-                        data['codon_position'] = int(data['codon_position'])-1
+                    if data['snp_type'] == 'nonsynonymous' or data['snp_type'] == 'synonymous':
+                        data['codon_position'] = int(data['codon_position']) - 1
                         data['old_base'] = data['codon_ref_seq'][data['codon_position']]
                     elif data['snp_type'] == 'intergenic':
-                        # this may need to be processed further (it's a tuple of some sort)
-                        data['gene_position'] = data['gene_position']
-                        data['gene_product'] = value
+                        print data['position']
                         data['old_base'] = refseq[data['position']]
                     else:
-                        print 'ERROR parsing snp', data['snp_type']
+                        print 'ERROR parsing SNP ', data['snp_type']
                 elif mut_type == 'SUB':
                     data['size'] = int(line[5])
                     data['new_seq'] = line[6]
@@ -172,17 +179,18 @@ def parse_gdfiles(filenames, refseq):
                 #alldiffs[fname][mut_id] = data
                 alldiffs[fname].append(data)
     #dbug_dict = alldiffs[alldiffs.keys()[0]] 
-    for k, mutation_list in alldiffs.iteritems():
-        print "the file name is: ", k
-        for i, mutation in enumerate(mutation_list):
-            if i < 5:
-                print mutation
+    for gdname, mutation_list in alldiffs.iteritems():
+        print "File:", gdname
+        for list_position, mutation in enumerate(mutation_list):
+            if list_position < 5:
+                print "Mutation", list_position, "\n", str_keyvalue(mutation), "\n", "*" * 40
         #print dbug_dict[f_mutid], '\n'
     return alldiffs
 
-def snpcount(diff_dict): #diff_dict = 'mutations'
-    #goal of snpcount
-    #put in comment with what input and output are
+def snpcount(diff_dict):
+    '''input: 'mutations'  #still confused about this. what is this? what should go here?
+    returns dictionary of gdfiles, each containing a matrix
+    (i.e., dict of dicts) of SNP mutations - to and from base'''
     matrixdict = {}
     for diff_name, mutlist in diff_dict.iteritems(): 
         snpmatrix={'A':{'G':0, 'C':0, 'T':0}, 'G':{'A':0, 'C':0, 'T':0},\
@@ -190,16 +198,22 @@ def snpcount(diff_dict): #diff_dict = 'mutations'
         for mutation in mutlist:
             if mutation['mut_type']=='SNP':
                 old_base = mutation['old_base']
-                new_base = mutation['new_seq']
+                new_base = mutation['new_base']
                 snpmatrix[old_base][new_base] = snpmatrix[old_base].get(new_base,0) + 1
         #print init_base
         matrixdict[diff_name] = snpmatrix
     return matrixdict
 
-def snpmutate (filename): #conf['ref']  #throw error if non-annotated genomediff?
+def snpmutate (filename1, filename2):  #throw error if non-annotated genomediff?
+    '''input: matrixdict and refseq from snpcount and parse_ref, respectively
+    goal: mutate one genome once, output positions of mutations
+    will later do:: for i in gdfiles: for i in # reps
+    also later: # of mutations per gene in reps, etc.'''
     pass
 
-def gds_gene_rank():
+def gds_gene_rank(mutationzz):
+    '''input: mutations, from parse_gdfiles
+    given user input #x, list x most mutated genes across all gdfiles'''
     pass
     mut_genes = {}
     for fname in filenames:
@@ -209,7 +223,7 @@ def gds_gene_rank():
 
 def proc1(conf):
     refseq = parse_ref(conf['ref'])
-    mutations = parse_gdfiles(conf['diffs'],conf['ref'])
+    mutations = parse_gdfiles(conf['diffs'], refseq)
     matrix = snpcount(mutations)
     #return mutations
     #return refseq
@@ -232,8 +246,8 @@ def main():
 
     conf = get_config()
     if conf['procedure']=='3':
-	print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref']
-	proc3(conf)
+        print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref']
+        proc3(conf)
     else: 
         print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs'], '\n'
 	if conf['procedure']=='1':
