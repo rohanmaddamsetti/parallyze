@@ -40,7 +40,6 @@ def get_config():
         for diff_file in diffs:   
 	        assert diff_file.endswith('.gd')
         conf['ref'] = ref
-    print refseq[10000]
         conf['procedure'] = config.PROCEDURE
         conf['diffs'] = diffs
         return conf
