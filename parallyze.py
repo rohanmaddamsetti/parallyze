@@ -142,7 +142,7 @@ def parse_gdfiles(filenames, refseq):
                 data['mut_id'] = line[1]
                 data['parent_ids'] = line[2].split(',')
                 data['seq_id'] = line[3]
-                data['position'] = int(line[4]) - 1
+                data['position'] = int(line[4])-1
 
 #IS THE REFGENOME 0 OR 1 INDEXED? 1 indexed -- fixed
 #IS THIS THE APPROPRIATE REFGENOME? THERE ARE MULTIPLE -- problamente si
@@ -158,7 +158,11 @@ def parse_gdfiles(filenames, refseq):
                         data['old_base'] = data['codon_ref_seq'][data['codon_position']]
                         if data['old_base'] == data['new_base']:
                             print 'WARNING: new base same as old base', ' ', data['snp_type'], ' inconsistencey in gdfile ', fname
-                            print str_keyvalue(data), '\n'
+                            print str_keyvalue(data)
+                            print 'refseq old_base:', refseq[data['position']]
+                            start = data['position']-2
+                            end = start+4
+                            print 'refseq sequence:', '({}:{})'.format(start,end-1), ''.join(refseq[start:end]), '\n'
                     elif data['snp_type'] in ['intergenic', 'pseudogene', 'noncoding']:
                         #print data['position']
                         data['old_base'] = refseq[data['position']]
