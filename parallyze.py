@@ -142,18 +142,28 @@ def parse_gdfiles(filenames, refseq):
                 data['mut_id'] = line[1]
                 data['parent_ids'] = line[2].split(',')
                 data['seq_id'] = line[3]
-                data['position'] = int(line[4])
+                data['position'] = int(line[4]) - 1
+
+#IS THE REFGENOME 0 OR 1 INDEXED? 1 indexed -- fixed
+#IS THIS THE APPROPRIATE REFGENOME? THERE ARE MULTIPLE -- problamente si
+#ARE SOME SNPS BASE(X) --> BASE(X) (PRINTOUT INDICATES YES) -- yeah, in genomediff
+
                 if mut_type == 'SNP':
                     data['new_base'] = line[5]
                     for pair in line[6:]:
                         key,_,value = pair.partition('=')
                         data[key.strip()] = value.strip()
-                    if data['snp_type'] == 'nonsynonymous' or data['snp_type'] == 'synonymous':
+                    if data['snp_type'] in ['nonsynonymous', 'synonymous']:
                         data['codon_position'] = int(data['codon_position']) - 1
                         data['old_base'] = data['codon_ref_seq'][data['codon_position']]
-                    elif data['snp_type'] == 'intergenic':
-                        print data['position']
+                        if data['old_base'] == data['new_base']:
+                            print 'WARNING: new base same as old base', ' ', data['snp_type'], ' inconsistencey in gdfile ', fname
+                            print str_keyvalue(data), '\n'
+                    elif data['snp_type'] in ['intergenic', 'pseudogene', 'noncoding']:
+                        #print data['position']
                         data['old_base'] = refseq[data['position']]
+                        if data['new_base'] == data['old_base']:
+                            print 'WARNING: new base same as old base', ' ', data['snp_type'], '  problem with refgenome or indexing'
                     else:
                         print 'ERROR parsing SNP ', data['snp_type']
                 elif mut_type == 'SUB':
@@ -181,7 +191,7 @@ def parse_gdfiles(filenames, refseq):
     for gdname, mutation_list in alldiffs.iteritems():
         print "File:", gdname
         for list_position, mutation in enumerate(mutation_list):
-            if list_position < 5:
+            if list_position < 1:
                 print "Mutation", list_position, "\n", str_keyvalue(mutation), "\n", "*" * 40
         #print dbug_dict[f_mutid], '\n'
     return alldiffs
@@ -201,6 +211,9 @@ def snpcount(diff_dict):
                 snpmatrix[old_base][new_base] = snpmatrix[old_base].get(new_base,0) + 1
         #print init_base
         matrixdict[diff_name] = snpmatrix
+    for filename in matrixdict:
+        print 'file:', filename
+        print 'to/from:', '\n', str_keyvalue(matrixdict[filename]), '\n'
     return matrixdict
 
 def snpmutate (filename1, filename2):  #throw error if non-annotated genomediff?
