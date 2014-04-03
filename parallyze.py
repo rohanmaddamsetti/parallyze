@@ -98,9 +98,9 @@ def parse_ref(ref_file):
 
     # convert the biopython Seq object to a python string
     # refseq = list(str(record.seq))
-    refseq = str(record.seq)
-    length=len(refseq)
-    
+    refseq = list(record.seq)
+    length=len(refseq)    
+
     countA=refseq.count('A') #possibly change to 0,1,2,3
     countG=refseq.count('G')
     countC=refseq.count('C')
@@ -115,6 +115,10 @@ def parse_ref(ref_file):
     print
 
     return refseq
+
+def str_keyvalue(data):
+    s = '\n'.join([str(key)+': '+str(data[key]) for key in data])
+    return s
 
 def parse_gdfiles(filenames, refseq):
     '''input: conf['diffs'] and conf['ref']
@@ -140,6 +144,7 @@ def parse_gdfiles(filenames, refseq):
                 data['seq_id'] = line[3]
                 data['position'] = int(line[4])
                 if mut_type == 'SNP':
+                    data['new_base'] = line[5]
                     for pair in line[6:]:
                         key,_,value = pair.partition('=')
                         data[key.strip()] = value.strip()
@@ -147,6 +152,7 @@ def parse_gdfiles(filenames, refseq):
                         data['codon_position'] = int(data['codon_position']) - 1
                         data['old_base'] = data['codon_ref_seq'][data['codon_position']]
                     elif data['snp_type'] == 'intergenic':
+                        print data['position']
                         data['old_base'] = refseq[data['position']]
                     else:
                         print 'ERROR parsing SNP ', data['snp_type']
@@ -173,10 +179,10 @@ def parse_gdfiles(filenames, refseq):
                 alldiffs[fname].append(data)
     #dbug_dict = alldiffs[alldiffs.keys()[0]] 
     for gdname, mutation_list in alldiffs.iteritems():
-        print "the file name is: ", gdname
+        print "File:", gdname
         for list_position, mutation in enumerate(mutation_list):
             if list_position < 5:
-                print mutation
+                print "Mutation", list_position, "\n", str_keyvalue(mutation), "\n", "*" * 40
         #print dbug_dict[f_mutid], '\n'
     return alldiffs
 
@@ -191,7 +197,7 @@ def snpcount(diff_dict):
         for mutation in mutlist:
             if mutation['mut_type']=='SNP':
                 old_base = mutation['old_base']
-                new_base = mutation['new_seq']
+                new_base = mutation['new_base']
                 snpmatrix[old_base][new_base] = snpmatrix[old_base].get(new_base,0) + 1
         #print init_base
         matrixdict[diff_name] = snpmatrix
@@ -216,7 +222,7 @@ def gds_gene_rank(mutationzz):
 
 def proc1(conf):
     refseq = parse_ref(conf['ref'])
-    mutations = parse_gdfiles(conf['diffs'],conf['ref'])
+    mutations = parse_gdfiles(conf['diffs'], refseq)
     matrix = snpcount(mutations)
     #return mutations
     #return refseq
@@ -239,8 +245,8 @@ def main():
 
     conf = get_config()
     if conf['procedure']=='3':
-	print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref']
-	proc3(conf)
+        print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref']
+        proc3(conf)
     else: 
         print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs'], '\n'
 	if conf['procedure']=='1':
