@@ -258,11 +258,13 @@ def gds_gene_rank(filenames):
     if intergenic == 1:
         rank_mut_types.append('intergenic')
     for fname in filenames:
-        for mut in fname:
-            if mut['snp_type'] in rank_mut_types:
+        for mut in filenames[fname]:
+            if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
                 gene_name = mut['gene_name']
-                mut[gene_name] = mut[gene_name].get(gene_name,0) + 1
-    print "gds_gene_rank indeed ran"
+                mut_genes[gene_name] = mut_genes.get(gene_name, 0) + 1
+    import operator
+    sorted_mut_genes = sorted(mut_genes.iteritems(), key=operator.itemgetter(1))
+    print str_keyvalue(sorted_mut_genes[:10])
     #diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive? 
 
 def proc1(conf):
