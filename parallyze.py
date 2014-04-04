@@ -78,6 +78,16 @@ def int_to_seq(seq):
     converted_to_seq=[int_to_base(b) for b in seq]
     return converted_to_seq
 
+def complementary_base(base):
+    if base == 'A':
+        return 'T'
+    elif base == 'T':
+        return 'A'
+    elif base == 'C':
+        return 'G'
+    elif base == 'G':
+        return 'C'
+
 def parse_ref(ref_file):
     '''input:conf['ref'] 
     #returns ref genome as a string 'refseq' '''
@@ -120,6 +130,10 @@ def str_keyvalue(data):
     s = '\n'.join([str(key)+': '+str(data[key]) for key in data])
     return s
 
+#IS THIS THE APPROPRIATE REFGENOME? THERE ARE MULTIPLE - maybe? REL606.6 (DDeatherage) 
+#ARE SOME SNPS BASE(X) --> BASE(X) (PRINTOUT INDICATES YES) -- yeah, in genomediff
+#NEED UPDATED BRESEQ?
+
 def parse_gdfiles(filenames, refseq):
     '''input: conf['diffs'] and conf['ref']
     :returns dict of gdfile names, each of which contains a list of sequential #s;
@@ -143,16 +157,18 @@ def parse_gdfiles(filenames, refseq):
                 data['parent_ids'] = line[2].split(',')
                 data['seq_id'] = line[3]
                 data['position'] = int(line[4])-1
-
-#IS THE REFGENOME 0 OR 1 INDEXED? 1 indexed -- fixed
-#IS THIS THE APPROPRIATE REFGENOME? THERE ARE MULTIPLE - maybe? 
-#ARE SOME SNPS BASE(X) --> BASE(X) (PRINTOUT INDICATES YES) -- yeah, in genomediff
-
                 if mut_type == 'SNP':
-                    data['new_base'] = line[5]
                     for pair in line[6:]:
                         key,_,value = pair.partition('=')
                         data[key.strip()] = value.strip()
+                    if data['gene_strand'] == '>' and data['snp_type'] in \
+                        ['nonsynonymous', 'synonymous', 'pseudogene']:
+                        data['new_base'] = line[5]
+                        print data['gene_strand']
+                    elif data['gene_strand'] == '<' and data['snp_type'] in \
+                        ['nonsynonymous', 'synonymous', 'pseudogene']:
+                        data['new_base'] = complementary_base(line[5])
+                        print data['gene_strand']
                     if data['snp_type'] in ['nonsynonymous', 'synonymous']:
                         data['codon_position'] = int(data['codon_position']) - 1
                         data['old_base'] = data['codon_ref_seq'][data['codon_position']]
@@ -166,6 +182,8 @@ def parse_gdfiles(filenames, refseq):
                     elif data['snp_type'] in ['intergenic', 'pseudogene', 'noncoding']:
                         #print data['position']
                         data['old_base'] = refseq[data['position']]
+                        if data['snp_type'] == 'noncoding':
+                            print '^^'*30, fname, str_keyvalue(data), '^^'*30
                         if data['new_base'] == data['old_base']:
                             print 'WARNING: new base same as old base', ' ', data['snp_type'], '  problem with refgenome or indexing'
                     else:
@@ -226,25 +244,30 @@ def snpmutate (filename1, filename2):  #throw error if non-annotated genomediff?
     also later: # of mutations per gene in reps, etc.'''
     pass
 
-def gds_gene_rank(mutations):
+def gds_gene_rank(filenames):
     '''input: mutations, from parse_gdfiles
     given user input #x, list x most mutated genes across all gdfiles'''
-    pass
     mut_genes = {}
-    synonymous = input("Include synonymous mutations in the analysis? Y or N: ")
-    noncoding = input("Include noncoding SNPs in the analysis? Y or N: ")
-    pseudogene = input("Include SNPs in psuedogenes in the analysis? Y or N: ")
-    intergenic = input("Include intergenic SNPs in the analysis? Y or N: ")
+    rank_mut_types = ['nonsynonymous']
+    synonymous = input("Include synonymous mutations in the analysis? 0 for N, 1 for Y: ")
+    noncoding = input("Include noncoding SNPs in the analysis? 0 or 1: ")
+    pseudogene = input("Include SNPs in psuedogenes in the analysis? 0 or 1: ")
+    intergenic = input("Include intergenic SNPs in the analysis? 0 or 1: ")
+    topgenes = input("How many of the top mutating genes would you like displayed? "), '\n'
+    if synonymous == 1:
+        rank_mut_types.append('synonymous')
+    if noncoding == 1:
+        rank_mut_types.append('noncoding')
+    if pseudogene == 1:
+        rank_mut_types.append('pseudogene')
+    if intergenic == 1:
+        rank_mut_types.append('intergenic')
     for fname in filenames:
-        if data['mut_type'] == 'SNP':
-            if data['snp_type'] == 'nonsynonymous':           
+        for mut in fname:
+            if data['snp_type'] in rank_mut_types:
                 gene_name = data['gene_name']
                 data[gene_name] = data[gene_name].get(gene_name,0) + 1
-            elif data['snp_type'] == 'synonymous' and synonymous in ['Y','y']: 
-    #for time's sake, divide above into elif...: if...: ?
-    #incorporate continue
-                data[gene_name] = data[gene_name].get(gene_name,0) + 1
-            elif 
+    print "gds_gene_rank indeed ran"
     #diff btwn intergenic and noncoding? pseudogene? all exclusive? 
 
 
@@ -252,6 +275,7 @@ def proc1(conf):
     refseq = parse_ref(conf['ref'])
     mutations = parse_gdfiles(conf['diffs'], refseq)
     matrix = snpcount(mutations)
+    gds_gene_rank(mutations)
     #return mutations
     #return refseq
     #return matrix
