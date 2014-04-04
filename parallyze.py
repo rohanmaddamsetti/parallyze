@@ -1,3 +1,4 @@
+#!/usr/bin/env python   #is there a reason this was deleted before?
 #usage: python parallyze.py
 
 import argparse
@@ -21,7 +22,7 @@ def file_list(fs):
     return flist
 
 def get_config():
-    #returns object that holds procedure name, ref file name, and diff file names
+    '''returns object that holds procedure name, ref file name, and diff file names'''
     conf={}
     if config.PROCEDURE == '3':
         ref = config.REF_GENOME.strip()
@@ -158,32 +159,27 @@ def parse_gdfiles(filenames, refseq):
                 data['seq_id'] = line[3]
                 data['position'] = int(line[4])-1
                 if mut_type == 'SNP':
+                    data['new_base'] = line[5]
                     for pair in line[6:]:
                         key,_,value = pair.partition('=')
                         data[key.strip()] = value.strip()
-                    if data['gene_strand'] == '>' and data['snp_type'] in \
-                        ['nonsynonymous', 'synonymous', 'pseudogene']:
-                        data['new_base'] = line[5]
-                        print data['gene_strand']
-                    elif data['gene_strand'] == '<' and data['snp_type'] in \
-                        ['nonsynonymous', 'synonymous', 'pseudogene']:
+                    if data['snp_type'] in ['nonsynonymous', 'synonymous', 'pseudogene'] and data['gene_strand'] == '<':
                         data['new_base'] = complementary_base(line[5])
-                        print data['gene_strand']
                     if data['snp_type'] in ['nonsynonymous', 'synonymous']:
                         data['codon_position'] = int(data['codon_position']) - 1
                         data['old_base'] = data['codon_ref_seq'][data['codon_position']]
-                        if data['old_base'] == data['new_base']:
-                            print 'WARNING: new base same as old base', ' ', data['snp_type'], ' inconsistencey in gdfile ', fname
-                            print str_keyvalue(data)
-                            print 'refseq old_base:', refseq[data['position']]
-                            start = data['position']-2
-                            end = start+4
-                            print 'refseq sequence:', '({}:{})'.format(start,end-1), ''.join(refseq[start:end]), '\n'
+#                        if data['old_base'] == data['new_base']:
+#                            print 'WARNING: new base same as old base', ' ', data['snp_type'], ' inconsistencey in gdfile ', fname
+#                            print str_keyvalue(data)
+#                            print 'refseq old_base:', refseq[data['position']]
+#                            start = data['position']-2
+#                            end = start+4
+#                            print 'refseq sequence:', '({}:{})'.format(start,end-1), ''.join(refseq[start:end]), '\n'      
                     elif data['snp_type'] in ['intergenic', 'pseudogene', 'noncoding']:
                         #print data['position']
                         data['old_base'] = refseq[data['position']]
-                        if data['snp_type'] == 'noncoding':
-                            print '^^'*30, fname, str_keyvalue(data), '^^'*30
+#                        if data['snp_type'] == 'noncoding':
+#                            print '^^'*30, fname, str_keyvalue(data), '^^'*30
                         if data['new_base'] == data['old_base']:
                             print 'WARNING: new base same as old base', ' ', data['snp_type'], '  problem with refgenome or indexing'
                     else:
@@ -230,7 +226,6 @@ def snpcount(diff_dict):
                 old_base = mutation['old_base']
                 new_base = mutation['new_base']
                 snpmatrix[old_base][new_base] = snpmatrix[old_base].get(new_base,0) + 1
-        #print init_base
         matrixdict[diff_name] = snpmatrix
     for filename in matrixdict:
         print 'file:', filename
@@ -264,12 +259,11 @@ def gds_gene_rank(filenames):
         rank_mut_types.append('intergenic')
     for fname in filenames:
         for mut in fname:
-            if data['snp_type'] in rank_mut_types:
-                gene_name = data['gene_name']
-                data[gene_name] = data[gene_name].get(gene_name,0) + 1
+            if mut['snp_type'] in rank_mut_types:
+                gene_name = mut['gene_name']
+                mut[gene_name] = mut[gene_name].get(gene_name,0) + 1
     print "gds_gene_rank indeed ran"
-    #diff btwn intergenic and noncoding? pseudogene? all exclusive? 
-
+    #diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive? 
 
 def proc1(conf):
     refseq = parse_ref(conf['ref'])
