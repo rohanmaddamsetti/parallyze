@@ -131,8 +131,7 @@ def str_keyvalue(data):
     s = '\n'.join([str(key)+': '+str(data[key]) for key in data])
     return s
 
-#IS THIS THE APPROPRIATE REFGENOME? THERE ARE MULTIPLE - maybe? REL606.6 (DDeatherage) 
-#ARE SOME SNPS BASE(X) --> BASE(X) (PRINTOUT INDICATES YES) -- yeah, in genomediff
+#IS THIS THE APPROPRIATE REFGENOME? THERE ARE MULTIPLE - maybe? REL606.6 
 #NEED UPDATED BRESEQ?
 
 def parse_gdfiles(filenames, refseq):
@@ -163,7 +162,10 @@ def parse_gdfiles(filenames, refseq):
                     for pair in line[6:]:
                         key,_,value = pair.partition('=')
                         data[key.strip()] = value.strip()
-                    if data['snp_type'] in ['nonsynonymous', 'synonymous', 'pseudogene'] and data['gene_strand'] == '<':
+'''                        data['gene_name'] =[value.strip()]
+                    if data['snp_type'] == 'intergenic':
+                        split/partition by '/'              '''
+                    if data['snp_type'] in ['nonsynonymous', 'synonymous'] and data['gene_strand'] == '<':
                         data['new_base'] = complementary_base(line[5])
                     if data['snp_type'] in ['nonsynonymous', 'synonymous']:
                         data['codon_position'] = int(data['codon_position']) - 1
@@ -232,22 +234,17 @@ def snpcount(diff_dict):
         print 'to/from:', '\n', str_keyvalue(matrixdict[filename]), '\n'
     return matrixdict
 
-def snpmutate (filename1, filename2):  #throw error if non-annotated genomediff?
-    '''input: matrixdict and refseq from snpcount and parse_ref, respectively
-    goal: mutate one genome once, output positions of mutations
-    will later do:: for i in gdfiles: for i in # reps
-    also later: # of mutations per gene in reps, etc.'''
-    pass
-
-def gds_gene_rank_parameters():
-    gene_rank_parameters = {}
-    gene_rank_parameters['synonymous'] = input("Include synonymous mutations in the analysis? 0 for N, 1 for Y: ")
-    gene_rank_parameters['noncoding'] = input("Include noncoding SNPs in the analysis? 0 or 1: ")
-    gene_rank_parameters['pseudogene'] = input("Include SNPs in psuedogenes in the analysis? 0 or 1: ")
-    gene_rank_parameters['intergenic'] = input("Include intergenic SNPs in the analysis? 0 or 1: ")
-    gene_rank_parameters['number_of_top_genes'] = int(input("How many of the most frequently mutated genes would you like displayed? "))
+def gene_rank_and_mutate_parameters():
+    rank_and_mut_params = {}
+    rank_and_mut_params['synonymous'] = input("Include synonymous mutations in the analysis? 0 for N, 1 for Y: ")
+    rank_and_mut_params['noncoding'] = input("Include noncoding SNPs in the analysis? 0 or 1: ")
+    rank_and_mut_params['pseudogene'] = input("Include SNPs in psuedogenes in the analysis? 0 or 1: ")
+    rank_and_mut_params['intergenic'] = input("Include intergenic SNPs in the analysis? 0 or 1: ")
+    rank_and_mut_params['number_of_top_genes'] = int(input("How many of the most frequently mutated genes would you like displayed? "))
+    rank_and_mut_params['generations'] = input("For how many generations did your experiment run? ")
+    rank_and_mut_params['replicates'] = input("How many replicates would you like? ")
     print
-    return gene_rank_parameters
+    return rank_and_mut_params
 
 def gds_gene_rank(filenames, params):
     '''input: mutations, from parse_gdfiles
@@ -275,8 +272,15 @@ def gds_gene_rank(filenames, params):
     print sorted_mut_genes[mut_genes_number - params['number_of_top_genes']:mut_genes_number] #put most_mutated_genes in here instead once it's working
     ##diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive? 
 
+def snpmutate (filename1, filename2):  #throw error if non-annotated genomediff?
+    '''input: matrixdict and refseq from snpcount and parse_ref, respectively
+    goal: mutate one genome once, output positions of mutations
+    will later do:: for i in gdfiles: for i in # reps
+    also later: # of mutations per gene in reps, etc.'''
+    pass
+
 def proc1(conf):
-    params = gds_gene_rank_parameters()
+    params = gene_rank_and_mutate_parameters()
     refseq = parse_ref(conf['ref'])
     mutations = parse_gdfiles(conf['diffs'], refseq)
     matrix = snpcount(mutations)
