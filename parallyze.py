@@ -162,9 +162,10 @@ def parse_gdfiles(filenames, refseq):
                     for pair in line[6:]:
                         key,_,value = pair.partition('=')
                         data[key.strip()] = value.strip()
-'''                        data['gene_name'] =[value.strip()]
-                    if data['snp_type'] == 'intergenic':
-                        split/partition by '/'              '''
+#                        data['gene_name'] =[value.strip()]
+#                    if data['snp_type'] == 'intergenic':
+#                        split/partition by '/'  
+#                                    '''
                     if data['snp_type'] in ['nonsynonymous', 'synonymous'] and data['gene_strand'] == '<':
                         data['new_base'] = complementary_base(line[5])
                     if data['snp_type'] in ['nonsynonymous', 'synonymous']:
