@@ -239,39 +239,48 @@ def snpmutate (filename1, filename2):  #throw error if non-annotated genomediff?
     also later: # of mutations per gene in reps, etc.'''
     pass
 
-def gds_gene_rank(filenames):
+def gds_gene_rank_parameters():
+    gene_rank_parameters = {}
+    gene_rank_parameters['synonymous'] = input("Include synonymous mutations in the analysis? 0 for N, 1 for Y: ")
+    gene_rank_parameters['noncoding'] = input("Include noncoding SNPs in the analysis? 0 or 1: ")
+    gene_rank_parameters['pseudogene'] = input("Include SNPs in psuedogenes in the analysis? 0 or 1: ")
+    gene_rank_parameters['intergenic'] = input("Include intergenic SNPs in the analysis? 0 or 1: ")
+    gene_rank_parameters['number_of_top_genes'] = int(input("How many of the most frequently mutated genes would you like displayed? "))
+    print
+    return gene_rank_parameters
+
+def gds_gene_rank(filenames, params):
     '''input: mutations, from parse_gdfiles
     given user input #x, list x most mutated genes across all gdfiles'''
     mut_genes = {}
     rank_mut_types = ['nonsynonymous']
-    synonymous = input("Include synonymous mutations in the analysis? 0 for N, 1 for Y: ")
-    noncoding = input("Include noncoding SNPs in the analysis? 0 or 1: ")
-    pseudogene = input("Include SNPs in psuedogenes in the analysis? 0 or 1: ")
-    intergenic = input("Include intergenic SNPs in the analysis? 0 or 1: ")
-    topgenes = input("How many of the top mutating genes would you like displayed? "), '\n'
-    if synonymous == 1:
+    if params['synonymous'] == 1:
         rank_mut_types.append('synonymous')
-    if noncoding == 1:
+    if params['noncoding'] == 1:
         rank_mut_types.append('noncoding')
-    if pseudogene == 1:
+    if params['pseudogene'] == 1:
         rank_mut_types.append('pseudogene')
-    if intergenic == 1:
+    if params['intergenic'] == 1:
         rank_mut_types.append('intergenic')
     for fname in filenames:
         for mut in filenames[fname]:
             if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
                 gene_name = mut['gene_name']
                 mut_genes[gene_name] = mut_genes.get(gene_name, 0) + 1
-    import operator
+    import operator #better way to pull top mutators than sorting? 
     sorted_mut_genes = sorted(mut_genes.iteritems(), key=operator.itemgetter(1))
-    print str_keyvalue(sorted_mut_genes[:10])
-    #diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive? 
+    mut_genes_number = int(len(sorted_mut_genes))
+    most_mutated_genes = {}  #store top mutators
+    print 'The', params['number_of_top_genes'], 'most mutated genes of all', mut_genes_number, 'mutated genes:'
+    print sorted_mut_genes[mut_genes_number - params['number_of_top_genes']:mut_genes_number] #put most_mutated_genes in here instead once it's working
+    ##diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive? 
 
 def proc1(conf):
+    params = gds_gene_rank_parameters()
     refseq = parse_ref(conf['ref'])
     mutations = parse_gdfiles(conf['diffs'], refseq)
     matrix = snpcount(mutations)
-    gds_gene_rank(mutations)
+    gds_gene_rank(mutations, params)
     #return mutations
     #return refseq
     #return matrix
