@@ -14,7 +14,8 @@ from Bio.Alphabet import IUPAC
 from Bio.Seq import MutableSeq
 
 from numpy import random
-from operator import itemgetter
+import operator
+
 def file_list(fs):
     flist = fs.split()
     for f in flist:
@@ -162,10 +163,9 @@ def parse_gdfiles(filenames, refseq):
                     for pair in line[6:]:
                         key,_,value = pair.partition('=')
                         data[key.strip()] = value.strip()
-#                        data['gene_name'] =[value.strip()]
-#                    if data['snp_type'] == 'intergenic':
-#                        split/partition by '/'  
-#                                    '''
+                        data['gene_name'] =[value.strip()]
+                    if data['snp_type'] == 'intergenic':
+                        data[value] = value.split('/')
                     if data['snp_type'] in ['nonsynonymous', 'synonymous'] and data['gene_strand'] == '<':
                         data['new_base'] = complementary_base(line[5])
                     if data['snp_type'] in ['nonsynonymous', 'synonymous']:
@@ -242,7 +242,7 @@ def gene_rank_and_mutate_parameters():
     rank_and_mut_params['pseudogene'] = input("Include SNPs in psuedogenes in the analysis? 0 or 1: ")
     rank_and_mut_params['intergenic'] = input("Include intergenic SNPs in the analysis? 0 or 1: ")
     rank_and_mut_params['number_of_top_genes'] = int(input("How many of the most frequently mutated genes would you like displayed? "))
-    rank_and_mut_params['generations'] = input("For how many generations did your experiment run? ")
+#    rank_and_mut_params['generations'] = input("For how many generations did your experiment run? ")
     rank_and_mut_params['replicates'] = input("How many replicates would you like? ")
     print
     return rank_and_mut_params
@@ -263,8 +263,10 @@ def gds_gene_rank(filenames, params):
     for fname in filenames:
         for mut in filenames[fname]:
             if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
-                gene_name = mut['gene_name']
-                mut_genes[gene_name] = mut_genes.get(gene_name, 0) + 1
+                for gene in mut['gene_name']:
+ #                   gene_name = mut['gene_name']
+                    gene_name = gene
+                    mut_genes[gene_name] = mut_genes.get(gene_name, 0) + 1
     sorted_mut_genes = sorted(mut_genes.iteritems(), key=operator.itemgetter(1), reverse = True)
     mut_genes_number = int(len(sorted_mut_genes))
     print 'The', params['number_of_top_genes'], 'most mutated genes of all', mut_genes_number, 'mutated genes:'
