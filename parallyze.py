@@ -163,9 +163,14 @@ def parse_gdfiles(filenames, refseq):
                     for pair in line[6:]:
                         key,_,value = pair.partition('=')
                         data[key.strip()] = value.strip()
-                        data['gene_name'] =[value.strip()]
-                    if data['snp_type'] == 'intergenic':
-                        data[value] = value.split('/')
+                    data['gene_name'] = [gene.strip() for gene in data['gene_name'].split('/')]
+                #        gene_names = data['gene_name']
+                #        data['gene_name'] = []
+                #        for name in gene_names.split('/'):
+                #            data['gene_name'].append(name.strip())
+                #        data['gene_name'] =[value.strip()]
+                #    if data['snp_type'] == 'intergenic':
+                #        data[value] = value.split('/')
                     if data['snp_type'] in ['nonsynonymous', 'synonymous'] and data['gene_strand'] == '<':
                         data['new_base'] = complementary_base(line[5])
                     if data['snp_type'] in ['nonsynonymous', 'synonymous']:
@@ -264,14 +269,24 @@ def gds_gene_rank(filenames, params):
         for mut in filenames[fname]:
             if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
                 for gene in mut['gene_name']:
- #                   gene_name = mut['gene_name']
                     gene_name = gene
                     mut_genes[gene_name] = mut_genes.get(gene_name, 0) + 1
     sorted_mut_genes = sorted(mut_genes.iteritems(), key=operator.itemgetter(1), reverse = True)
     mut_genes_number = int(len(sorted_mut_genes))
     print 'The', params['number_of_top_genes'], 'most mutated genes of all', mut_genes_number, 'mutated genes:'
     print sorted_mut_genes[:params['number_of_top_genes']]
+    return sorted_mut_genes
     ##diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive? 
+
+def chartmutgenes(genefreqs):
+    import pylab as pl
+    import numpy
+    x = numpy.arange(len(genefreqs))
+    pl.bar(x, genefreqs.values(), align='center', width=0.5)
+    pl.xticks(x, genefreqs.keys())
+    ymax = max(genefreqs.values()) + 1
+    pl.ylim(0,ymax)
+    pl.show()
 
 def snpmutate (filename1, filename2):  #throw error if non-annotated genomediff?
     '''input: matrixdict and refseq from snpcount and parse_ref, respectively
@@ -286,6 +301,7 @@ def proc1(conf):
     mutations = parse_gdfiles(conf['diffs'], refseq)
     matrix = snpcount(mutations)
     gds_gene_rank(mutations, params)
+    chartmutgenes(gds_gene_rank)
     #return mutations
     #return refseq
     #return matrix
