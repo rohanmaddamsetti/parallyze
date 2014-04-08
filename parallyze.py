@@ -1,4 +1,4 @@
-#!/usr/bin/env python   #is there a reason this was deleted before?
+#!/usr/bin/env python  
 #usage: python parallyze.py
 
 import argparse
@@ -14,7 +14,7 @@ from Bio.Alphabet import IUPAC
 from Bio.Seq import MutableSeq
 
 from numpy import random
-
+from operator import itemgetter
 def file_list(fs):
     flist = fs.split()
     for f in flist:
@@ -265,12 +265,10 @@ def gds_gene_rank(filenames, params):
             if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
                 gene_name = mut['gene_name']
                 mut_genes[gene_name] = mut_genes.get(gene_name, 0) + 1
-    import operator #better way to pull top mutators than sorting? 
-    sorted_mut_genes = sorted(mut_genes.iteritems(), key=operator.itemgetter(1))
+    sorted_mut_genes = sorted(mut_genes.iteritems(), key=operator.itemgetter(1), reverse = True)
     mut_genes_number = int(len(sorted_mut_genes))
-    most_mutated_genes = {}  #store top mutators
     print 'The', params['number_of_top_genes'], 'most mutated genes of all', mut_genes_number, 'mutated genes:'
-    print sorted_mut_genes[mut_genes_number - params['number_of_top_genes']:mut_genes_number] #put most_mutated_genes in here instead once it's working
+    print sorted_mut_genes[:params['number_of_top_genes']]
     ##diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive? 
 
 def snpmutate (filename1, filename2):  #throw error if non-annotated genomediff?
