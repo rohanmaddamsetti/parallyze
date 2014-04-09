@@ -15,6 +15,7 @@ from Bio.Seq import MutableSeq
 
 from numpy import random
 import operator
+import random
 
 def file_list(fs):
     flist = fs.split()
@@ -278,7 +279,7 @@ def gds_gene_rank(filenames, params):
     return sorted_mut_genes
     ##diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive? 
 
-def chartmutgenes(genefreqs):
+def chartmutgenes(genefreqs): # broken as-is
     import pylab as pl
     import numpy
     x = numpy.arange(len(genefreqs))
@@ -288,20 +289,32 @@ def chartmutgenes(genefreqs):
     pl.ylim(0,ymax)
     pl.show()
 
-def snpmutate (filename1, filename2):  #throw error if non-annotated genomediff?
+def snpmutate (matrix, refseq): 
     '''input: matrixdict and refseq from snpcount and parse_ref, respectively
     goal: mutate one genome once, output positions of mutations
     will later do:: for i in gdfiles: for i in # reps
     also later: # of mutations per gene in reps, etc.'''
     pass
+    for filename in matrix:
+        for origbase in filename:
+            for newbase in origbase:
+                for count in newbase:
+                    pick = random.choice(refseq)
+                    while random.choice(refseq) != origbase:
+                        random.choice(refseq)
+                        if pick == origbase:
+                            #things
+                            break
+    #do this for each file? all together? save position or gene? output?
 
 def proc1(conf):
     params = gene_rank_and_mutate_parameters()
     refseq = parse_ref(conf['ref'])
     mutations = parse_gdfiles(conf['diffs'], refseq)
     matrix = snpcount(mutations)
-    gds_gene_rank(mutations, params)
-    chartmutgenes(gds_gene_rank)
+    genefreqs = gds_gene_rank(mutations, params)
+    snpmutate(matrix, refseq)
+    #chartmutgenes(genefreqs)
     #return mutations
     #return refseq
     #return matrix
