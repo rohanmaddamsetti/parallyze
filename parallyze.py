@@ -266,7 +266,8 @@ def gds_gene_rank(filenames, params):
         rank_mut_types.append('pseudogene')
     if params['intergenic'] == 1:
         rank_mut_types.append('intergenic')
-    for fname in filenames:
+    for fname in filenames: #if a file/line has any number of a particular mut, add 1
+                            #so max number for a gene is the number of files
         for mut in filenames[fname]:
             if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
                 for gene in mut['gene_name']:
