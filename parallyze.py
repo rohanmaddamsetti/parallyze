@@ -91,7 +91,7 @@ def complementary_base(base):
     elif base == 'G':
         return 'C'
 
-def parse_ref(ref_file):
+def make_record(ref_file):
     '''input:conf['ref'] 
     #returns ref genome as a string 'refseq' '''
 
@@ -104,30 +104,36 @@ def parse_ref(ref_file):
     one record in the SeqIO iterator. We will be *very* explicit and store
     the iterator itself as it, then  call next() on it like so:
     '''
-
     conf = get_config()
     it = SeqIO.parse(ref_file, "genbank")
-    record = it.next() 
+    record = it.next()
+    print record
+    return record  #i want this to get all gnee data and ref data - only gets ref i think
 
+def get_refseq(record):
     # convert the biopython Seq object to a python string
     # refseq = list(str(record.seq))
     refseq = list(record.seq)
     length=len(refseq)    
-
-    countA=refseq.count('A') #possibly change to 0,1,2,3
-    countG=refseq.count('G')
-    countC=refseq.count('C')
-    countT=refseq.count('T')
+    countA=refseq.count('A'); countG=refseq.count('G')
+    countC=refseq.count('C'); countT=refseq.count('T')
     print '\n', 'Base distribution in reference: '
     print 'A:', countA, '   G:', countG, '   C:', countC, '   T:', countT
-
     # or do seq = ''.join(seq) to save it as a string and overwrite the list
     ##print 'Seq as string [truncated]:', ''.join(seq)[:1000], '...'
     print "Number of bases: ", length
     print 'Seq as condensed string:', ''.join(refseq)[0:100], '...', ''.join(refseq)[length-100:length] 
     print
-
     return refseq
+
+def get_genecoordinates(record):
+    from Bio import SeqFeature
+    geneinfo = []
+    for i in record:
+        coords = SeqFeature.FeatureLocation()
+        
+    pass
+    #return output
 
 def str_keyvalue(data):
     s = '\n'.join([str(key)+': '+str(data[key]) for key in data])
@@ -310,11 +316,13 @@ def snpmutate (matrix, refseq):
 
 def proc1(conf):
     params = gene_rank_and_mutate_parameters()
-    refseq = parse_ref(conf['ref'])
+    record = make_record(conf['ref'])
+    refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
     matrix = snpcount(mutations)
     genefreqs = gds_gene_rank(mutations, params)
-    snpmutate(matrix, refseq)
+    genecoords = get_genecoordinates(record)
+    #snpmutate(matrix, refseq)
     #chartmutgenes(genefreqs)
     #return mutations
     #return refseq
