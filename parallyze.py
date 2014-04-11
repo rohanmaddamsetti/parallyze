@@ -107,8 +107,8 @@ def make_record(ref_file):
     conf = get_config()
     it = SeqIO.parse(ref_file, "genbank")
     record = it.next()
-    print record
-    return record  #i want this to get all gnee data and ref data - only gets ref i think
+    print '\n', record
+    return record  #i want this to get all gene data and ref data - only gets ref i think
 
 def get_refseq(record):
     # convert the biopython Seq object to a python string
@@ -129,11 +129,17 @@ def get_refseq(record):
 def get_genecoordinates(record):
     from Bio import SeqFeature
     geneinfo = []
-    for i in record:
-        coords = SeqFeature.FeatureLocation()
-        
-    pass
-    #return output
+    for i in record.features:
+        print i
+        if i.type == 'CDS': #or i[type] if dictionary - tab everything below
+            coords = SeqFeature.FeatureLocation()
+            my_start = int(coords.location.start)
+            my_end = int(coords.location.end)
+            gene_name = coords.description
+            mytuple = (my_start, my_end, gene_name)
+            geneinfo.append(mytuple)
+    print geneinfo
+    return geneinfo
 
 def str_keyvalue(data):
     s = '\n'.join([str(key)+': '+str(data[key]) for key in data])
@@ -229,7 +235,7 @@ def parse_gdfiles(filenames, refseq):
     return alldiffs
 
 def snpcount(diff_dict):
-    '''input: 'mutations'  #still confused about this. what is this? what should go here?
+    '''input: 'mutations' i.e., parsed gd files
     returns dictionary of gdfiles, each containing a matrix
     (i.e., dict of dicts) of SNP mutations - to and from base'''
     matrixdict = {}
@@ -284,17 +290,7 @@ def gds_gene_rank(filenames, params):
     print 'The', params['number_of_top_genes'], 'most mutated genes of all', mut_genes_number, 'mutated genes:'
     print sorted_mut_genes[:params['number_of_top_genes']]
     return sorted_mut_genes
-    ##diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive? 
-
-def chartmutgenes(genefreqs): # broken as-is
-    import pylab as pl
-    import numpy
-    x = numpy.arange(len(genefreqs))
-    pl.bar(x, genefreqs.values(), align='center', width=0.5)
-    pl.xticks(x, genefreqs.keys())
-    ymax = max(genefreqs.values()) + 1
-    pl.ylim(0,ymax)
-    pl.show()
+    ##diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive?
 
 def snpmutate (matrix, refseq): 
     '''input: matrixdict and refseq from snpcount and parse_ref, respectively
@@ -314,12 +310,34 @@ def snpmutate (matrix, refseq):
                             break
     #do this for each file? all together? save position or gene? output?
 
+def dnds_calculate(diff_dict):
+    '''input: the output from parsed gd files
+    goal: count the SNP mutation types for dN/dS, intergenic, etc
+    output: dict of dict of a count'''
+    muttypes = {}
+#    for fname in mutations:
+#        for mut in mutations[fname]:
+#            if mut['mut_type'] == 'SNP': 
+#                    muttypes[gene_name] = muttypes.get(gene_name, 0) + 1
+
+    for diff_name, mutlist in diff_dict.iteritems():
+        muttype_dict = {'synonymous':0, 'nonsynonymous':0, 'intergenic':0, 'noncoding':0, 'pseudogene':0}
+        for mutation in mutlist:
+            if mutation['mut_type'] == "SNP":
+                muttypes[mut['mut_type'][0]] = muttypes.get(mut['mut_type'],0) + 1
+        muttypes[diff_name] = muttype_dict
+    for fname in muttypes:
+        print 'file:', fname
+        print 'SNP mutation type', str.keyvalue(muttypes[fname]), '\n'
+    return muttypes
+
 def proc1(conf):
     params = gene_rank_and_mutate_parameters()
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
     matrix = snpcount(mutations)
+    dnds_calculate(mutations)
     genefreqs = gds_gene_rank(mutations, params)
     genecoords = get_genecoordinates(record)
     #snpmutate(matrix, refseq)
@@ -336,6 +354,13 @@ def proc3(conf):
     lines=input("How many lines?  ")
     gens=input("How many generations? ")
     reps=input("How many replicates?  ")
+
+def proc5(conf):
+    params = gene_rank_and_mutate_parameters()
+    record = make_record(conf['ref'])
+    refseq = get_refseq(record)
+    mutations = parse_gdfiles(conf['diffs'], refseq)
+    dnds_calculate(mutations)
 
 def main():
     parser = argparse.ArgumentParser()
