@@ -10,8 +10,9 @@ import config_default
 
 from Bio import SeqIO
 from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import IUPAC
-from Bio.Seq import MutableSeq
+#from Bio.Seq import MutableSeq
 
 from numpy import random
 import operator
@@ -112,14 +113,13 @@ def make_record(ref_file):
 
 def get_refseq(record):
     # convert the biopython Seq object to a python string
-    # refseq = list(str(record.seq))
     refseq = list(record.seq)
     length=len(refseq)    
     countA=refseq.count('A'); countG=refseq.count('G')
     countC=refseq.count('C'); countT=refseq.count('T')
     print '\n', 'Base distribution in reference: '
     print 'A:', countA, '   G:', countG, '   C:', countC, '   T:', countT
-    # or do seq = ''.join(seq) to save it as a string and overwrite the list
+    # or seq = ''.join(seq) to save as string & overwrite the list
     ##print 'Seq as string [truncated]:', ''.join(seq)[:1000], '...'
     print "Number of bases: ", length
     print 'Seq as condensed string:', ''.join(refseq)[0:100], '...', ''.join(refseq)[length-100:length] 
@@ -127,26 +127,32 @@ def get_refseq(record):
     return refseq
 
 def get_genecoordinates(record):
+    '''input: record file from reference (i.e., ref as record file)
+    get all IDed genes and their beginning and end position;
+    store in list of tuples'''
     from Bio import SeqFeature
     geneinfo = []
     for i in record.features:
-        print i
         if i.type == 'CDS': #or i[type] if dictionary - tab everything below
-            coords = SeqFeature.FeatureLocation()
-            my_start = int(coords.location.start)
-            my_end = int(coords.location.end)
-            gene_name = coords.description
-            mytuple = (my_start, my_end, gene_name)
+        #add non-CDS records later? (tRNA, lonely 'gene', repeat_region, misc_feature
+            my_start = int(i.location.start)
+            my_end = int(i.location.end)
+            locus_tag = i.qualifiers['locus_tag'][0]
+            try:
+                 gene_name = i.qualifiers['gene'][0]
+            except KeyError: 
+                gene_name = 'none'
+            mytuple = (my_start, my_end, gene_name, locus_tag)
             geneinfo.append(mytuple)
-    print geneinfo
+    print '\n', geneinfo[:10]
     return geneinfo
 
 def str_keyvalue(data):
     s = '\n'.join([str(key)+': '+str(data[key]) for key in data])
     return s
 
-#IS THIS THE APPROPRIATE REFGENOME? THERE ARE MULTIPLE - maybe? REL606.6 
-#NEED UPDATED BRESEQ?
+#is this appropriate refgenome? there are multiple - maybe? REL606.6 
+#need updated breseq?
 
 def parse_gdfiles(filenames, refseq):
     '''input: conf['diffs'] and conf['ref']
@@ -297,7 +303,6 @@ def snpmutate (matrix, refseq):
     goal: mutate one genome once, output positions of mutations
     will later do:: for i in gdfiles: for i in # reps
     also later: # of mutations per gene in reps, etc.'''
-    pass
     for filename in matrix:
         for origbase in filename:
             for newbase in origbase:
@@ -337,10 +342,10 @@ def proc1(conf):
     refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
     matrix = snpcount(mutations)
-    dnds_calculate(mutations)
+    #dnds_calculate(mutations)
     genefreqs = gds_gene_rank(mutations, params)
     genecoords = get_genecoordinates(record)
-    #snpmutate(matrix, refseq)
+    snpmutate(matrix, refseq)
     #chartmutgenes(genefreqs)
     #return mutations
     #return refseq
