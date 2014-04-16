@@ -310,7 +310,7 @@ def snpmutate(matrix, refseq_arr):
     also later: # of mutations per gene in reps, etc.'''
     mut_sites = {}
     #print matrix
-    for origbase in matrix:
+    for origbase in matrix:  #how is origbase not referring to the file names? matrix[fname][origbase][newbase], right? 
         num_muts = sum(matrix[origbase][newbase] for newbase in matrix[origbase])
         #print origbase, num_muts
         sites = np.random.choice(np.where(refseq_arr==origbase)[0], size=num_muts)
