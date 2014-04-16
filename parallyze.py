@@ -145,7 +145,7 @@ def get_genecoordinates(record):
                 gene_name = 'none'
             mytuple = (my_start, my_end, gene_name, locus_tag)
             geneinfo.append(mytuple)
-    print '\n', geneinfo[:10]
+    print '\n', 'Reference genome gene list (1st 10)', '\n', geneinfo[:10]
     return geneinfo
 
 def str_keyvalue(data):
@@ -160,14 +160,18 @@ def parse_gdfiles(filenames, refseq):
     :returns dict of gdfile names, each of which contains a list of sequential #s;
     each # corresponds to a dictionary for each mutation (contains key and value)''' 
     alldiffs={}
+    #disregarded_evidence = ['#', 'JC', 'RA', 'UN', 'MC', 'NOTE']
     for fname in filenames:
         alldiffs[fname] = []
         with open(fname) as fp:
             for line in fp: 
+                #if line.startswith(i) for i in disregard_evidence:
                 if line.startswith('#') or \
                     line.startswith('JC') or \
                     line.startswith('RA') or \
-                    line.startswith('UN'):
+                    line.startswith('UN') or \
+                    line.startswith('MC') or \
+                    line.startswith('NOTE'):
                     continue
                 line = line.split('\t')
                 data = {}
