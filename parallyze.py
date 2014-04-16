@@ -15,6 +15,7 @@ from Bio.Alphabet import IUPAC
 #from Bio.Seq import MutableSeq
 
 from numpy import random
+import numpy as np
 import operator
 import random
 
@@ -298,22 +299,34 @@ def gds_gene_rank(filenames, params):
     return sorted_mut_genes
     ##diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive?
 
-def snpmutate (matrix, refseq): 
-    '''input: matrixdict and refseq from snpcount and parse_ref, respectively
+def snpmutate(matrix, refseq_arr): 
+    '''input: matrixdict and refseq as numpy array from snpcount and parse_ref, respectively
     goal: mutate one genome once, output positions of mutations
     will later do:: for i in gdfiles: for i in # reps
     also later: # of mutations per gene in reps, etc.'''
-    for filename in matrix:
-        for origbase in filename:
-            for newbase in origbase:
-                for count in newbase:
-                    pick = random.choice(refseq)
-                    while random.choice(refseq) != origbase:
-                        random.choice(refseq)
-                        if pick == origbase:
-                            #things
-                            break
-    #do this for each file? all together? save position or gene? output?
+    mut_sites = {}
+    #print matrix
+    for origbase in matrix:
+        num_muts = sum(matrix[origbase][newbase] for newbase in matrix[origbase])
+        #print origbase, num_muts
+        sites = np.random.choice(np.where(refseq_arr==origbase)[0], size=num_muts)
+        mut_sites[origbase] = sites
+    #print mut_sites
+    return mut_sites
+                
+
+def get_mut_sites(matrices, refseq, num_replicates):
+    mut_sites = {}
+    refseq_arr = np.array([c for c in refseq]) 
+    for filename in matrices:
+        print '\n** generating mutation sites for', filename
+        mut_sites[filename] = []
+        for rep in xrange(num_replicates):
+            if rep % 50 == 0 and rep > 0:
+                print '\t... rep', rep, 'in', filename
+            mut_sites[filename].append(snpmutate(matrices[filename], refseq_arr))
+    return mut_sites
+
 
 def dnds_calculate(diff_dict):
     '''input: the output from parsed gd files
@@ -341,11 +354,12 @@ def proc1(conf):
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
-    matrix = snpcount(mutations)
+    matrices = snpcount(mutations)
     #dnds_calculate(mutations)
     genefreqs = gds_gene_rank(mutations, params)
     genecoords = get_genecoordinates(record)
-    snpmutate(matrix, refseq)
+    mut_sites = get_mut_sites(matrices, refseq, params['replicates'])
+    print mut_sites
     #chartmutgenes(genefreqs)
     #return mutations
     #return refseq
