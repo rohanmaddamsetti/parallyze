@@ -28,15 +28,7 @@ def file_list(fs):
 def get_config():
     '''returns object that holds procedure name, ref file name, and diff file names'''
     conf={}
-    if config.PROCEDURE == '3':
-        ref = config.REF_GENOME.strip()
-        assert os.path.isfile(ref)
-        assert ref.endswith('.gb') or ref.endswith('.gbk') 
-        conf['procedure'] = config.PROCEDURE
-	conf['ref'] = ref
-	assert len(config.GENOME_DIFFS.strip())==0
-        return conf
-    elif config.PROCEDURE in ['1','2','4','5']:  
+    if config.PROCEDURE in ['1','2','3','4']:  
         ref = config.REF_GENOME.strip()
         assert os.path.isfile(ref)
         assert ref.endswith('.gb') or ref.endswith('.gbk')
@@ -319,7 +311,7 @@ def snpmutate(matrix, num_replicates, refseq_arr):
     '''
     mut_sites = {}
     #print matrix
-    for origbase in matrix:  #how is origbase not referring to the file names? matrix[fname][origbase][newbase], right? 
+    for origbase in matrix:  
         num_muts = sum(matrix[origbase][newbase] for newbase in matrix[origbase])
         #print origbase, num_muts
         sites = np.zeros((num_replicates, num_muts), dtype=int)
@@ -327,7 +319,7 @@ def snpmutate(matrix, num_replicates, refseq_arr):
             if rep % 50 == 0 and rep > 0: #prints progress report
                 print '\t... rep', rep, 'for base', origbase
             try:
-                rep_sites = np.random.choice(np.where(refseq_arr==origbase)[0], size=num_muts, replace=False) #[0] because returns a tuple, and we just want 1st element (list of indicees). sites = numpy array
+                rep_sites = np.random.choice(np.where(refseq_arr==origbase)[0], size=num_muts, replace=False) #[0] because returns a tuple, and we just want 1st element (list of indices). 
             except ValueError as e:
                 print >>sys.stderr, e
                 print >>sys.stderr, 'Error getting sites for replicate', rep
@@ -339,7 +331,7 @@ def snpmutate(matrix, num_replicates, refseq_arr):
                 
 def get_mut_sites(matrices, refseq, num_replicates):
     mut_sites = {}
-    refseq_arr = np.array([c for c in refseq]) #list = array of pointers to objects ----- array = region of fixed-length objects (x bits). array is much smaller but less flexible than lists
+    refseq_arr = np.array([c for c in refseq]) 
     for filename in matrices:
         print '\n** generating mutation sites for', filename
         mut_sites[filename] = snpmutate(matrices[filename], num_replicates, refseq_arr)
@@ -401,16 +393,13 @@ def proc1(conf):
     #return refseq
     #return matrix
 
-def proc3(conf):
+'''old proc3:
     print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral'\
         '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another',\
         '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome',\
-        '\n', 'There is only one chromosome', '\n'
-    lines=input("How many lines?  ")
-    gens=input("How many generations? ")
-    reps=input("How many replicates?  ")
+        '\n', 'There is only one chromosome', '\n'  '''
 
-def proc5(conf):
+def proc4(conf):
     params = gene_rank_and_mutate_parameters()
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
@@ -424,17 +413,14 @@ def main():
     args = parser.parse_args()
 
     conf = get_config()
-    if conf['procedure']=='3':
-        print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref']
-        proc3(conf)
-    else: 
-        print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs'], '\n'
-	if conf['procedure']=='1':
+    print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs'], '\n'
+    if conf['procedure']=='1':
 	    proc1(conf)
-	elif conf['procedure']=='2':
+    elif conf['procedure']=='2':
 	    proc2(conf)
-	elif conf['procedure']=='4':
+    elif conf['procedure']=='3':
+	    proc3(conf)
+    elif conf['procedure']=='4':
 	    proc4(conf)
-	elif conf['procedure']=='5':
-	    proc5(conf)
+
 main()
