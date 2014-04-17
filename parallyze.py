@@ -353,8 +353,16 @@ def get_mut_sites(matrices, refseq, num_replicates):
     return mut_sites
 
 ''' What's left to do
-        get genes that positions fall into. have # of times hit, not just hit/nothit
+        -get genes that positions fall into. have # of times hit, not just hit/nothit (best method for this? locus tag? gene? (do intergenic now - intragenic later)
+        -sum, across all lines, # of mutations per gene, for experimental data (done) and simulated data - divide by reps for avg. 
+        -print bar graphs? 
+        -get dN/dS working? 
+        -analytic solution for SNPs? too much work? not enough complexity.  
 '''     
+
+def get_simulatedgenenames(genecoords, mut_sites):
+    pass
+    for each file, for each origbase, for each replicate, for each position, is position in range of a gene from get_genecoordinates --- or for each gene, check all positions
 
 def dnds_calculate(diff_dict):
     '''input: the output from parsed gd files
