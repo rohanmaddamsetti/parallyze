@@ -362,7 +362,7 @@ def get_mut_sites(matrices, refseq, num_replicates):
 
 def get_simulatedgenenames(genecoords, mut_sites):
     pass
-    for each file, for each origbase, for each replicate, for each position, is position in range of a gene from get_genecoordinates --- or for each gene, check all positions
+    #for each file, for each origbase, for each replicate, for each position, is position in range of a gene from get_genecoordinates --- or for each gene, check all positions
 
 def dnds_calculate(diff_dict):
     '''input: the output from parsed gd files
