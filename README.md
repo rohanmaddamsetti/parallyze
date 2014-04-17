@@ -20,11 +20,9 @@ as well as the length of the experiment.
 
 ## Algorithm design
 
-In all cases, the user should be able to specify only examining coding regions,
-or just nonsynonymous and synonymous mutations, or just synonymous mutations.
+In all cases, the user should be able to specify only examining coding regions, or just nonsynonymous and synonymous mutations, or just synonymous mutations.
 
-###Procedure 1: Gene mutation frequency. Within each gene, what is the frequency 
-of mutation for all of my pooled experimental lineages compared to a null distribution? 
+###Procedure 1: Gene mutation frequency. Within each gene, what is the frequency of mutation for all of my pooled experimental lineages compared to a null distribution? 
 
 Genomes from evolution experiment. Assume all independent, i.e. star phylogeny.
 
@@ -36,8 +34,7 @@ Count all point mutations (x_1 + x_2 + ... + x_n), and turn into 4x4 matrix.
         for 1 to n genomes:
           draw x_i mutations from the mutation matrix, and drop onto reference genome.
 
-###Procedure 2: Dispersion Test. For a single gene, what is the distribution 
-of mutations across my experimental lineages compared to a null distribution? 
+###Procedure 2: Dispersion Test. For a single gene, what is the distribution of mutations across my experimental lineages compared to a null distribution? 
 
 Genomes from evolution experiment. Assume star phylogeny.
 
