@@ -22,9 +22,11 @@ as well as the length of the experiment.
 
 In all cases, the user should be able to specify only examining coding regions,
 or just nonsynonymous and synonymous mutations, or just synonymous mutations.
-Also, the user should be able to supply a 4x4 matrix of mutation probabilities as an option for all cases.
 
-###Procedure 1: Genomes from evolution experiment. Assume all independent, i.e. star phylogeny.
+###Procedure 1: Gene mutation frequency. Within each gene, what is the frequency 
+of mutation for all of my pooled experimental lineages compared to a null distribution? 
+
+Genomes from evolution experiment. Assume all independent, i.e. star phylogeny.
 
 Count all point mutations (x_1 + x_2 + ... + x_n), and turn into 4x4 matrix.
 
@@ -34,24 +36,19 @@ Count all point mutations (x_1 + x_2 + ... + x_n), and turn into 4x4 matrix.
         for 1 to n genomes:
           draw x_i mutations from the mutation matrix, and drop onto reference genome.
 
-###Procedure 2: Dispersion Test. Genomes from evolution experiment. Assume star phylogeny.
+###Procedure 2: Dispersion Test. For a single gene, what is the distribution 
+of mutations across my experimental lineages compared to a null distribution? 
+
+Genomes from evolution experiment. Assume star phylogeny.
 
     for 1 to N replicates:
         Shuffle all mutations across n genomes.
     Calculate how often a certain dispersion pattern occurs 
     (e.g., 12 mutations in nadR; all mutations occur in separate genomes).    
-
-
-###Procedure 3: Simulating an evolution experiment (constant u, no mutators)
-
-Start with a 4x4 matrix and set lambda = mean number of mutations per genome, and n = number of genomes.
-
-    for 1 to N replicates:
-      for 1 to n:
-        draw x_i from Poisson(lambda)
-        drop x_i onto reference genome
         
-###Procedure 4: Genomes from multiple isolates from the same experimental evolution population.
+###Procedure 3: Phylogeny construction. What is the phylogeny of my sequenced genomes?
+
+Genomes from multiple isolates from the same experimental evolution population.
 
 1) Infer phylogeny
 2) Infer genotypes of all internal nodes by "using parsimonious assumptions" -- or better.
@@ -64,7 +61,7 @@ Start with a 4x4 matrix and set lambda = mean number of mutations per genome, an
 
 This procedure could be extended to clinical or epidemiological isolates in the future.
 
-###Procedure 5: Relative counts of dN, dS, and intergenic mutations at gene and genome level.
+###Procedure 4: What are the relative counts of dN, dS, and intergenic mutations at gene and genome level?
 
 This should be straightforward from the genome diff format.
 
@@ -98,93 +95,3 @@ compared to pykF, but if only 2 sites in the spoT matter, compared to pykF, etc.
 
 In any case, including a temporal dimension (randomizing the identity of mutations over a phylogeny)
 will surely allow for other interesting statistical tests.
-
-##Mutation Implementation Idea
-
-Numpy has a function which, given a list of probabilities, will choose elements from that list based on those probabilities.
-
-So, first convert the list of bases to a list of probabilities, using a list comprehension. Something like:
-
-    def pFunc(base):
-	if base == 'A':
-	    return pA
-	elif base == 'T':
-	    return pT
-	elif base == 'G':
-	    return pG
-	else:
-	    return pC
-
-Where pX is the probability (summed from that row in the matrix) of chosing that base. For this to work,
-you'll need to divide each pX by len(seq). NOTE: this is wrong. oops.
-
-Then, use the list comp like:
-
-probs = [pFunc(base) for base in seq]
-
-Where seq is the list version of the sequence.
-
-Then just call numpy.random.choice(range(len(seq)),p=probs) to get a position. Do this for as many mutations as
-decided from your Poisson model, or just pass that number to choice like so:
-
-mutpositions = numpy.random.choice(range(len(seq)), size=nummuts, p=probs, replace=False/True)
-
-Now that you have the positions, it is trivial to check which base is at the position and use the probability
-matrix to decide to which base it mutates.
-
-##Mutation Implementation Idea 2
-
-This one definitely works.
-
-1) Convert the sequence to an array of ints
-
-    def convert(b):
-	if b == 'A':
-	    return 0
-	elif b == 'T':
-	    return 1
-	etc...
-    
-converted_seq = [convert(b) for b in seq]
-
-2) Get the mutation types
-
-Given an array P, where  P = [pA, pT, pC, pG] (ie len(P) == 4)
-
-    mut_types = numpy.random.choice([0,1,2,3], P, size=num_muts)
-
-where num_muts is from the Poission model, and [0,1,2,3] is just
-referring to A,T,C,G
-
-mut_types will just be an array containing some number of 0,1,2,3 corresponding
-to which bases are being chosen to mutate
-
-3) Get the positions
-
-Use numpy.where, which returns the indices for values given some conditions.
-
-So, for example, to get the positions of all the A's, do
-
-    pos_A = numpy.where(converted_seq == 0)
-
-To get our mutation positions, we iterate throug the array of mutation types,
-call np.where on all of them, and choose from the resulting positions:
-
-    for mut_type in mut_types:
-	# numpy.where returns a tuple, we just want the first element
-	(positions,) = numpy.where(converted_seq == mut_type)
-	the_pos = numpy.random.choice(positions)
-	mutate_pos(the_pos, mut_type, converted_seq)
-
-4) We just called a function named mutate_pos. We need to define it! So,
-
-This is where we use the probability matrix.
-
-    def mutate_pos(pos, mut_type, seq):
-	if mut_type == 0:
-	    use probs for A and random.choice like used for mut_types)
-	    mutate the position in seq
-	elif mut_type == 1:
-	    same deal
-	etc.
-
