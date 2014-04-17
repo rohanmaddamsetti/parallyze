@@ -303,22 +303,37 @@ def gds_gene_rank(filenames, params):
     return sorted_mut_genes
     ##diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive?
 
-def snpmutate(matrix, refseq_arr): 
+def snpmutate(matrix, num_replicates, refseq_arr): 
     '''input: matrixdict and refseq as numpy array from snpcount and parse_ref, respectively
     goal: mutate one genome once, output positions of mutations
     will later do:: for i in gdfiles: for i in # reps
-    also later: # of mutations per gene in reps, etc.'''
+    also later: # of mutations per gene in reps, etc.
+
+    returns a dict with original base as key, numpy array as value:
+    { 'A': np.array(num_replicates by num_mutatations A to others),
+      'T': np.array(num_replicates by num_mutations T to others),
+      ...
+    }
+    Where each array has num_replicates rows and columns corresponding to the number of mutations
+    for the original base
+    '''
     mut_sites = {}
     #print matrix
     for origbase in matrix:  #how is origbase not referring to the file names? matrix[fname][origbase][newbase], right? 
         num_muts = sum(matrix[origbase][newbase] for newbase in matrix[origbase])
         #print origbase, num_muts
-        try:
-            sites = np.random.choice(np.where(refseq_arr==origbase)[0], size=num_muts, replace=False) #[0] because returns a tuple, and we just want 1st element (list of indicees). sites = numpy array
-        except ValueError as e:
-            print >>sys.stderr, e
-        else:
-            mut_sites[origbase] = sites
+        sites = np.zeros((num_replicates, num_muts), dtype=int)
+        for rep in xrange(num_replicates):
+            if rep % 50 == 0 and rep > 0: #prints progress report
+                print '\t... rep', rep, 'for base', origbase
+            try:
+                rep_sites = np.random.choice(np.where(refseq_arr==origbase)[0], size=num_muts, replace=False) #[0] because returns a tuple, and we just want 1st element (list of indicees). sites = numpy array
+            except ValueError as e:
+                print >>sys.stderr, e
+                print >>sys.stderr, 'Error getting sites for replicate', rep
+            else:
+                sites[rep,:] = rep_sites
+        mut_sites[origbase] = sites
     #print mut_sites
     return mut_sites
                 
@@ -327,16 +342,19 @@ def get_mut_sites(matrices, refseq, num_replicates):
     refseq_arr = np.array([c for c in refseq]) #list = array of pointers to objects ----- array = region of fixed-length objects (x bits). array is much smaller but less flexible than lists
     for filename in matrices:
         print '\n** generating mutation sites for', filename
-        mut_sites[filename] = []
-        for rep in xrange(num_replicates):
-            if rep % 50 == 0 and rep > 0: #prints progress report
-                print '\t... rep', rep, 'in', filename
-            mut_sites[filename].append(snpmutate(matrices[filename], refseq_arr))
+        mut_sites[filename] = snpmutate(matrices[filename], num_replicates, refseq_arr)
+    '''
+    mut_sites = { 'filename1': { 'A': array(row for reps, columns for mut position indices), 
+                                 'T': array(...) ... },
+                  'filename2': {...},
+                  ...
+                }
+    '''
     return mut_sites
 
 ''' What's left to do
         get genes that positions fall into. have # of times hit, not just hit/nothit
-        
+'''     
 
 def dnds_calculate(diff_dict):
     '''input: the output from parsed gd files
