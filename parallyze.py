@@ -313,24 +313,30 @@ def snpmutate(matrix, refseq_arr):
     for origbase in matrix:  #how is origbase not referring to the file names? matrix[fname][origbase][newbase], right? 
         num_muts = sum(matrix[origbase][newbase] for newbase in matrix[origbase])
         #print origbase, num_muts
-        sites = np.random.choice(np.where(refseq_arr==origbase)[0], size=num_muts)
-        mut_sites[origbase] = sites
+        try:
+            sites = np.random.choice(np.where(refseq_arr==origbase)[0], size=num_muts, replace=False) #[0] because returns a tuple, and we just want 1st element (list of indicees). sites = numpy array
+        except ValueError as e:
+            print >>sys.stderr, e
+        else:
+            mut_sites[origbase] = sites
     #print mut_sites
     return mut_sites
                 
-
 def get_mut_sites(matrices, refseq, num_replicates):
     mut_sites = {}
-    refseq_arr = np.array([c for c in refseq]) 
+    refseq_arr = np.array([c for c in refseq]) #list = array of pointers to objects ----- array = region of fixed-length objects (x bits). array is much smaller but less flexible than lists
     for filename in matrices:
         print '\n** generating mutation sites for', filename
         mut_sites[filename] = []
         for rep in xrange(num_replicates):
-            if rep % 50 == 0 and rep > 0:
+            if rep % 50 == 0 and rep > 0: #prints progress report
                 print '\t... rep', rep, 'in', filename
             mut_sites[filename].append(snpmutate(matrices[filename], refseq_arr))
     return mut_sites
 
+''' What's left to do
+        get genes that positions fall into. have # of times hit, not just hit/nothit
+        
 
 def dnds_calculate(diff_dict):
     '''input: the output from parsed gd files
