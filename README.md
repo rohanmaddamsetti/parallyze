@@ -22,7 +22,7 @@ as well as the length of the experiment.
 
 In all cases, the user should be able to specify only examining coding regions, or just nonsynonymous and synonymous mutations, or just synonymous mutations.
 
-###Procedure 1: Gene mutation frequency. Within each gene, what is the frequency of mutation for all of my pooled experimental lineages compared to a null distribution? 
+###Procedure 1: Gene mutation frequency. For each gene, what is the frequency of mutation for all of my pooled experimental lineages compared to a null distribution? 
 
 Genomes from evolution experiment. Assume all independent, i.e. star phylogeny.
 
