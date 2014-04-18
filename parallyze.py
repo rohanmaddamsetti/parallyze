@@ -1,5 +1,10 @@
 #!/usr/bin/env python  
 #usage: python parallyze.py
+'''
+camille TODO:
+-change genefreqs and genecoords to use the locus tag because many gene names are 'none'
+-add asserts for list sizes to make sure results are sane
+'''
 
 import argparse
 import os
@@ -18,6 +23,7 @@ from numpy import random
 import numpy as np
 import operator
 import random
+import pandas as pd
 
 def file_list(fs):
     flist = fs.split()
@@ -180,6 +186,8 @@ def parse_gdfiles(filenames, refseq):
                         key,_,value = pair.partition('=')
                         data[key.strip()] = value.strip()
                     data['gene_name'] = [gene.strip() for gene in data['gene_name'].split('/')]
+                    data['locus_tag'] = [tag.strip() for tag in data['locus_tag'].split('/')]
+
                 #        gene_names = data['gene_name']
                 #        data['gene_name'] = []
                 #        for name in gene_names.split('/'):
@@ -285,14 +293,15 @@ def gds_gene_rank(filenames, params):
                             #so max number for a gene is the number of files
         for mut in filenames[fname]:
             if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
-                for gene in mut['gene_name']:
-                    gene_name = gene
-                    mut_genes[gene_name] = mut_genes.get(gene_name, 0) + 1
-    sorted_mut_genes = sorted(mut_genes.iteritems(), key=operator.itemgetter(1), reverse = True)
-    mut_genes_number = int(len(sorted_mut_genes))
-    print 'The', params['number_of_top_genes'], 'most mutated genes of all', mut_genes_number, 'mutated genes:'
-    print sorted_mut_genes[:params['number_of_top_genes']]
-    return sorted_mut_genes
+                for tag in mut['locus_tag']:
+                    mut_genes[tag] = mut_genes.get(tag, 0) + 1
+    print mut_genes
+    return mut_genes
+    #sorted_mut_genes = sorted(mut_genes.iteritems(), key=operator.itemgetter(1), reverse = True)
+    #mut_genes_number = int(len(sorted_mut_genes))
+    #print 'The', params['number_of_top_genes'], 'most mutated genes of all', mut_genes_number, 'mutated genes:'
+    #print sorted_mut_genes[:params['number_of_top_genes']]
+    #return sorted_mut_genes
     ##diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive?
 
 def snpmutate(matrix, num_replicates, refseq_arr): 
@@ -352,9 +361,30 @@ def get_mut_sites(matrices, refseq, num_replicates):
         -analytic solution for SNPs? too much work? not enough complexity.  
 '''     
 
-def get_simulatedgenenames(genecoords, mut_sites):
-    pass
-    #for each file, for each origbase, for each replicate, for each position, is position in range of a gene from get_genecoordinates --- or for each gene, check all positions
+def write_gene_mut_counts(genecoords, mut_sites):
+    header = 'gene, ' + ', '.join([filename for filename in mut_sites])
+    with open('sim_mut_counts.csv', 'wb') as outfp:
+        outfp.write(header + '\n')
+        for start, end, name, tag in genecoords:
+            row = [tag]
+            for filename in mut_sites:
+                line_muts = 0
+                for origbase in mut_sites[filename]:
+                    line_muts += ((mut_sites[filename][origbase] >= start) & (mut_sites[filename][origbase] < end)).sum()
+                row.append(line_muts)
+            outfp.write(', '.join([str(c) for c in row]) + '\n')
+
+def write_gd_gene_mut_counts(genecoords, gd_genes):
+    header = 'gene, count'
+    with open('exp_mut_counts.csv', 'wb') as outfp:
+        outfp.write(header + '\n')
+        for _, _, gene, tag in genecoords:
+            muts = [tag]
+            if tag in gd_genes:
+                muts.append(gd_genes[tag])
+            else:
+                muts.append(0)
+            outfp.write(', '.join([str(c) for c in muts]) + '\n')
 
 def dnds_calculate(diff_dict):
     '''input: the output from parsed gd files
@@ -385,9 +415,14 @@ def proc1(conf):
     matrices = snpcount(mutations)
     #dnds_calculate(mutations)
     genefreqs = gds_gene_rank(mutations, params)
+    #genefreqs = {key:value for key,value in genefreqs}
     genecoords = get_genecoordinates(record)
+    with open('genecoords.txt', 'wb') as fp:
+        fp.write(str(genecoords))
     mut_sites = get_mut_sites(matrices, refseq, params['replicates'])
-    print mut_sites
+    write_gene_mut_counts(genecoords, mut_sites)
+    write_gd_gene_mut_counts(genecoords, genefreqs)
+    #print mut_sites
     #chartmutgenes(genefreqs)
     #return mutations
     #return refseq
