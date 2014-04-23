@@ -108,7 +108,7 @@ def make_record(ref_file):
     it = SeqIO.parse(ref_file, "genbank")
     record = it.next()
     print '\n', record
-    return record  #i want this to get all gene data and ref data - only gets ref i think
+    return record  
 
 def get_refseq(record):
     # convert the biopython Seq object to a python string
@@ -306,9 +306,6 @@ def gds_gene_rank(filenames, params):
 
 def snpmutate(matrix, num_replicates, refseq_arr): 
     '''input: matrixdict and refseq as numpy array from snpcount and parse_ref, respectively
-    goal: mutate one genome once, output positions of mutations
-    will later do:: for i in gdfiles: for i in # reps
-    also later: # of mutations per gene in reps, etc.
 
     returns a dict with original base as key, numpy array as value:
     { 'A': np.array(num_replicates by num_mutatations A to others),
@@ -422,17 +419,8 @@ def proc1(conf):
     mut_sites = get_mut_sites(matrices, refseq, params['replicates'])
     write_gene_mut_counts(genecoords, mut_sites)
     write_gd_gene_mut_counts(genecoords, genefreqs)
-    #print mut_sites
-    #chartmutgenes(genefreqs)
-    #return mutations
-    #return refseq
-    #return matrix
 
-'''old proc3:
-    print '\n', 'Assumptions:', '\n', 'Synonymous mutations are neutral'\
-        '\n', 'Infinite sites model', '\n', 'Mutations are independent of one another',\
-        '\n', 'No defects to DNA repair', '\n', 'Mutation rate is constant across the genome',\
-        '\n', 'There is only one chromosome', '\n'  '''
+'''old proc3 assumptions: Synonymous mutations are neutral, Mutations are independent of one another, No defects to DNA repair, Mutation rate is constant across the genome, There is only one chromosome'''
 
 def proc4(conf):
     params = gene_rank_and_mutate_parameters()
@@ -459,3 +447,10 @@ def main():
 	    proc4(conf)
 
 main()
+
+'''
+
+things to do:
+1. change locations of mutations to be dropped to align with included/specified gd mutations
+2. change from #muts/gene to #lines/gene
+'''
