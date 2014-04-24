@@ -453,4 +453,6 @@ main()
 things to do:
 1. change locations of mutations to be dropped to align with included/specified gd mutations
 2. change from #muts/gene to #lines/gene
+3. analytic solution
+4. dN/dS ratio
 '''
