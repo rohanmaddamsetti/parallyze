@@ -4,7 +4,20 @@
 camille TODO:
 -change genefreqs and genecoords to use the locus tag because many gene names are 'none'
 -add asserts for list sizes to make sure results are sane
-'''
+
+things to do:
+1. change locations of mutations to be dropped to align with included/specified gd mutations
+2. change from #muts/gene to #lines/gene
+3. analytic solution
+4. dN/dS ratio
+
+ What's left to do
+        -get genes that positions fall into. have # of times hit, not just hit/nothit (best method for this? locus tag? gene? (do intergenic now - intragenic later)
+        -sum, across all lines, # of mutations per gene, for experimental data (done) and simulated data - divide by reps for avg. 
+        -print bar graphs? 
+        -get dN/dS working? 
+        -analytic solution for SNPs? too much work? not enough complexity.  
+'''     
 
 import argparse
 import os
@@ -14,6 +27,7 @@ import config
 import config_default
 
 from Bio import SeqIO
+from Bio import SeqFeature
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import IUPAC
@@ -129,7 +143,6 @@ def get_genecoordinates(record):
     '''input: record file from reference (i.e., ref as record file)
     get all IDed genes and their beginning and end position;
     store in list of tuples'''
-    from Bio import SeqFeature
     geneinfo = []
     for i in record.features:
         if i.type == 'CDS': #or i[type] if dictionary - tab everything below
@@ -350,14 +363,6 @@ def get_mut_sites(matrices, refseq, num_replicates):
     '''
     return mut_sites
 
-''' What's left to do
-        -get genes that positions fall into. have # of times hit, not just hit/nothit (best method for this? locus tag? gene? (do intergenic now - intragenic later)
-        -sum, across all lines, # of mutations per gene, for experimental data (done) and simulated data - divide by reps for avg. 
-        -print bar graphs? 
-        -get dN/dS working? 
-        -analytic solution for SNPs? too much work? not enough complexity.  
-'''     
-
 def write_gene_mut_counts(genecoords, mut_sites):
     header = 'gene, ' + ', '.join([filename for filename in mut_sites])
     with open('sim_mut_counts.csv', 'wb') as outfp:
@@ -448,11 +453,3 @@ def main():
 
 main()
 
-'''
-
-things to do:
-1. change locations of mutations to be dropped to align with included/specified gd mutations
-2. change from #muts/gene to #lines/gene
-3. analytic solution
-4. dN/dS ratio
-'''
