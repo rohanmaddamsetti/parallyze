@@ -8,7 +8,7 @@ camille TODO:
 things to do:
 1. change locations of mutations to be dropped to align with included/specified gd mutations
 2. change from #muts/gene to #lines/gene
-3. analytic solution
+3. analytic solution for SNPs
 4. dN/dS ratio
 
  What's left to do
@@ -16,7 +16,6 @@ things to do:
         -sum, across all lines, # of mutations per gene, for experimental data (done) and simulated data - divide by reps for avg. 
         -print bar graphs? 
         -get dN/dS working? 
-        -analytic solution for SNPs? too much work? not enough complexity.  
 '''     
 
 import argparse
