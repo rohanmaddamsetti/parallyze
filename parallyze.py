@@ -1,21 +1,16 @@
 #!/usr/bin/env python  
 #usage: python parallyze.py
 '''
-camille TODO:
--change genefreqs and genecoords to use the locus tag because many gene names are 'none'
--add asserts for list sizes to make sure results are sane
-
-things to do:
-1. change locations of mutations to be dropped to align with included/specified gd mutations
-2. change from #muts/gene to #lines/gene
-3. analytic solution for SNPs
-4. dN/dS ratio
-
- What's left to do
-        -get genes that positions fall into. have # of times hit, not just hit/nothit (best method for this? locus tag? gene? (do intergenic now - intragenic later)
-        -sum, across all lines, # of mutations per gene, for experimental data (done) and simulated data - divide by reps for avg. 
-        -print bar graphs? 
-        -get dN/dS working? 
+Things to do:
+1. change genefreqs and genecoords to use the locus tag because many gene names are 'none'
+2. add asserts for list sizes to make sure results are sane
+3. change locations of mutations to be dropped to align with included/specified gd mutations
+4. change from #muts/gene to #lines/gene
+5. analytic solution for SNPs
+6. dN/dS ratio
+7. get genes that positions fall into. have # of times hit, not just hit/nothit (best method for this? locus tag? gene? (do intergenic now - intragenic later)
+8. sum, across all lines, # of mutations per gene, for experimental data (done) and simulated data - divide by reps for avg. 
+9. print bar graphs? 
 '''     
 
 import argparse
@@ -66,6 +61,7 @@ def get_config():
         conf['diffs'] = config_default.GENOME_DIFFS
         return conf
 
+'''
 def base_to_int(i):
     if i == 'A':
         return 0
@@ -93,6 +89,7 @@ def seq_to_int(seq):
 def int_to_seq(seq):
     converted_to_seq=[int_to_base(b) for b in seq]
     return converted_to_seq
+'''
 
 def complementary_base(base):
     if base == 'A':
@@ -106,7 +103,7 @@ def complementary_base(base):
 
 def make_record(ref_file):
     '''input:conf['ref'] 
-    #returns ref genome as a string 'refseq' '''
+    returns ref genome as a string 'refseq' '''
 
     '''
     SeqIO.parse is an iterator and so has a method named "next"
@@ -433,6 +430,22 @@ def proc4(conf):
     mutations = parse_gdfiles(conf['diffs'], refseq)
     dnds_calculate(mutations)
 
+def proc5(conf):
+    params = gene_rank_and_mutate_parameters()
+    record = make_record(conf['ref'])
+    refseq = get_refseq(record)
+    mutations = parse_gdfiles(conf['diffs'], refseq)
+    matrices = snpcount(mutations)
+    #dnds_calculate(mutations)
+    genefreqs = gds_gene_rank(mutations, params)
+    #genefreqs = {key:value for key,value in genefreqs}
+    genecoords = get_genecoordinates(record)
+    with open('genecoords.txt', 'wb') as fp:
+        fp.write(str(genecoords))
+    mut_sites = get_mut_sites(matrices, refseq, params['replicates'])
+    write_gene_mut_counts(genecoords, mut_sites)
+    write_gd_gene_mut_counts(genecoords, genefreqs)
+
 def main():
     parser = argparse.ArgumentParser()
     #parser.add_argument(dest='config', help="Config.py file should be in working folder.")
@@ -441,14 +454,16 @@ def main():
 
     conf = get_config()
     print >>sys.stderr, 'Configuration', '\n', 'Procedure: ', conf['procedure'], '\n','Reference: ', conf['ref'], '\n','Genome diffs: ', conf['diffs'], '\n'
-    if conf['procedure']=='1':
+    if conf['procedure'] == '1':
 	    proc1(conf)
-    elif conf['procedure']=='2':
+    elif conf['procedure'] == '2':
 	    proc2(conf)
-    elif conf['procedure']=='3':
+    elif conf['procedure'] == '3':
 	    proc3(conf)
-    elif conf['procedure']=='4':
+    elif conf['procedure'] == '4':
 	    proc4(conf)
+    elif conf['procedure'] == '5':
+        proc5(conf)
 
 main()
 
