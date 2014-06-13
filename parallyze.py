@@ -4,7 +4,7 @@
 Things to do:
 1. change genefreqs and genecoords to use the locus tag because many gene names are 'none'
 2. add asserts for list sizes to make sure results are sane
-3. change locations of mutations to be dropped to align with included/specified gd mutations
+3. change locations of mutations to be dropped to align with included/specified gd mutations (ie, synon, non-synon, non-coding, etc)
 4. change from #muts/gene to #lines/gene
 5. analytic solution for SNPs
 6. dN/dS ratio
@@ -285,9 +285,9 @@ def gene_rank_and_mutate_parameters():
     print
     return rank_and_mut_params
 
-def gds_gene_rank(filenames, params):
+def lines_gene_rank(filenames, params):
     '''input: mutations, from parse_gdfiles
-    given user input #x, list x most mutated genes across all gdfiles'''
+    given user input #x, list # mutated lines/gene'''
     mut_genes = {}
     rank_mut_types = ['nonsynonymous']
     if params['synonymous'] == 1:
@@ -304,6 +304,30 @@ def gds_gene_rank(filenames, params):
             if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
                 for tag in mut['locus_tag']:
                     mut_genes[tag] = mut_genes.get(tag, 0) + 1
+                    #if mut_genes[tag]>1: set = 1
+                    #record what genome's it is in
+    print mut_genes
+    return mut_gene
+
+def gds_gene_rank(filenames, params):
+    '''input: mutations, from parse_gdfiles
+    given user input #x, list x most mutated genes across all gdfiles
+    (#muts/gene across all lines)'''
+    mut_genes = {}
+    rank_mut_types = ['nonsynonymous']
+    if params['synonymous'] == 1:
+        rank_mut_types.append('synonymous')
+    if params['noncoding'] == 1:
+        rank_mut_types.append('noncoding')
+    if params['pseudogene'] == 1:
+        rank_mut_types.append('pseudogene')
+    if params['intergenic'] == 1:
+        rank_mut_types.append('intergenic')
+    for fname in filenames: 
+        for mut in filenames[fname]:
+            if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
+                for tag in mut['locus_tag']:
+                    mut_genes[tag] = mut_genes.get(tag, 0) + 1
     print mut_genes
     return mut_genes
     #sorted_mut_genes = sorted(mut_genes.iteritems(), key=operator.itemgetter(1), reverse = True)
@@ -315,6 +339,7 @@ def gds_gene_rank(filenames, params):
 
 def snpmutate(matrix, num_replicates, refseq_arr): 
     '''input: matrixdict and refseq as numpy array from snpcount and parse_ref, respectively
+    called by get_mut_sites
 
     returns a dict with original base as key, numpy array as value:
     { 'A': np.array(num_replicates by num_mutatations A to others),
