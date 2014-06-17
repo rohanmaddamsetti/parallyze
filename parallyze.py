@@ -305,7 +305,7 @@ def lines_gene_rank(filenames, params):
                 for tag in mut['locus_tag']:
                     mut_genes[tag] = mut_genes.get(tag, 0) + 1
                     #if mut_genes[tag]>1: set = 1
-                    #record what genome's it is in
+                    #record what genomes it is in
     print mut_genes
     return mut_gene
 
@@ -418,13 +418,25 @@ def dnds_calculate(diff_dict):
 #        for mut in mutations[fname]:
 #            if mut['mut_type'] == 'SNP': 
 #                    muttypes[gene_name] = muttypes.get(gene_name, 0) + 1
-
-    for diff_name, mutlist in diff_dict.iteritems():
+    '''
+        for diff_name, mutlist in diff_dict.iteritems():
         muttype_dict = {'synonymous':0, 'nonsynonymous':0, 'intergenic':0, 'noncoding':0, 'pseudogene':0}
         for mutation in mutlist:
             if mutation['mut_type'] == "SNP":
                 muttypes[mut['mut_type'][0]] = muttypes.get(mut['mut_type'],0) + 1
         muttypes[diff_name] = muttype_dict
+    for fname in muttypes:
+        print 'file:', fname
+        print 'SNP mutation type', str.keyvalue(muttypes[fname]), '\n'
+    return muttypes
+    '''
+
+    for diff_name, mutlist in diff_dict.iteritems():
+        muttype_dict = {'synonymous':0, 'nonsynonymous':0, 'intergenic':0, 'noncoding':0, 'pseudogene':0}
+        for mutation in mutlist:
+            if mutation['mut_type'] == "SNP":
+                muttype_dict['mut_type'][0] = muttype_dict.get('mut_type',0) + 1
+        muttype_dict['diff_name'] = muttype_dict #change this
     for fname in muttypes:
         print 'file:', fname
         print 'SNP mutation type', str.keyvalue(muttypes[fname]), '\n'
