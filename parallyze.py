@@ -409,10 +409,11 @@ def write_gd_gene_mut_counts(genecoords, gd_genes):
                 muts.append(0)
             outfp.write(', '.join([str(c) for c in muts]) + '\n')
 
+'''
 def dnds_calculate(diff_dict):
-    '''input: the output from parsed gd files
-    goal: count the SNP mutation types for dN/dS, intergenic, etc
-    output: dict of dict of a count'''
+    #input: the output from parsed gd files
+    #goal: count the SNP mutation types for dN/dS, intergenic, etc
+    #output: dict of dict of a count
     muttypes = {}
 #    for fname in mutations:
 #        for mut in mutations[fname]:
@@ -424,8 +425,30 @@ def dnds_calculate(diff_dict):
         for mutation in mutlist:
             if mutation['mut_type'] == "SNP":
                 muttypes[mut['mut_type'][0]] = muttypes.get(mut['mut_type'],0) + 1
+                #muttypes[mut['mut_type'][0]] = muttypes.get(mut['mut_type'],0) + 1
         muttypes[diff_name] = muttype_dict
     for fname in muttypes:
+        print 'file:', fname
+        print 'SNP mutation type', str.keyvalue(muttypes[fname]), '\n'
+    return muttypes
+'''
+
+def dnds_calculate(diff_dict):
+    '''input: the output from parsed gd files
+    goal: count the SNP mutation types for dN/dS, intergenic, etc
+    output: dict of dict of a count'''
+#    for fname in mutations:
+#        for mut in mutations[fname]:
+#            if mut['mut_type'] == 'SNP': 
+#                    muttypes[gene_name] = muttypes.get(gene_name, 0) + 1
+
+    for diff_name, mutlist in diff_dict.iteritems():
+        muttype_dict = {'synonymous':0, 'nonsynonymous':0, 'intergenic':0, 'noncoding':0, 'pseudogene':0}
+        for mutation in mutlist:
+            if mutation['mut_type'] == "SNP":
+                muttype_dict['mut_type'][0]] = muttype_dict.get('mut_type',0) + 1
+        #muttype_dict[diff_name] = muttype_dict
+    for fname in muttype_dict:
         print 'file:', fname
         print 'SNP mutation type', str.keyvalue(muttypes[fname]), '\n'
     return muttypes

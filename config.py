@@ -3,14 +3,13 @@
 #Don't delete quote marks
 #To run default data, leave all spaces empty
 
-PROCEDURE = '1'
+PROCEDURE = '4'
 
 REF_GENOME = '''
 reference.gbk
 '''
 
 GENOME_DIFFS = '''
-Ara-1_40K_10938_annotated.gd
-Ara-2_40K_11035_annotated.gd
-Ara-3_40K_10979_annotated.gd
+Ara+1_50K_11392_annotated.gd
+Ara+2_50K_11342_annotated.gd
 '''
