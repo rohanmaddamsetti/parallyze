@@ -152,7 +152,7 @@ def get_genecoordinates(record):
                 gene_name = 'none'
             mytuple = (my_start, my_end, gene_name, locus_tag)
             geneinfo.append(mytuple)
-    print '\n', 'Reference genome gene list (1st 10)', '\n', geneinfo[:10]
+    print '\n', 'Reference genome gene list (1st 10): start position, end pos, gene, locus_tag', '\n', geneinfo[:10]
     return geneinfo
 
 def str_keyvalue(data):
@@ -304,15 +304,17 @@ def lines_gene_rank(filenames, params):
             if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
                 for tag in mut['locus_tag']:
                     mut_genes[tag] = mut_genes.get(tag, 0) + 1
-                    #if mut_genes[tag]>1: set = 1
+                    if mut_genes[tag] > 1: 
+                        mut_genes[tag] = 1
                     #record what genomes it is in
-    print mut_genes
-    return mut_gene
+    print mut_genes 
+    return mut_genes
 
+'''
 def gds_gene_rank(filenames, params):
-    '''input: mutations, from parse_gdfiles
-    given user input #x, list x most mutated genes across all gdfiles
-    (#muts/gene across all lines)'''
+    #input: mutations, from parse_gdfiles
+    #given user input #x, list x most mutated genes across all gdfiles
+    #(#muts/gene across all lines)
     mut_genes = {}
     rank_mut_types = ['nonsynonymous']
     if params['synonymous'] == 1:
@@ -336,6 +338,7 @@ def gds_gene_rank(filenames, params):
     #print sorted_mut_genes[:params['number_of_top_genes']]
     #return sorted_mut_genes
     ##diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive?
+'''
 
 def snpmutate(matrix, num_replicates, refseq_arr): 
     '''input: matrixdict and refseq as numpy array from snpcount and parse_ref, respectively
@@ -443,13 +446,13 @@ def dnds_calculate(diff_dict):
     return muttypes
 
 def proc1(conf):
+    '''simulated solution'''
     params = gene_rank_and_mutate_parameters()
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
     matrices = snpcount(mutations)
-    #dnds_calculate(mutations)
-    genefreqs = gds_gene_rank(mutations, params)
+    genefreqs = lines_gene_rank(mutations, params)
     #genefreqs = {key:value for key,value in genefreqs}
     genecoords = get_genecoordinates(record)
     with open('genecoords.txt', 'wb') as fp:
@@ -461,6 +464,7 @@ def proc1(conf):
 '''old proc3 assumptions: Synonymous mutations are neutral, Mutations are independent of one another, No defects to DNA repair, Mutation rate is constant across the genome, There is only one chromosome'''
 
 def proc4(conf):
+    '''dnds calculation'''
     params = gene_rank_and_mutate_parameters()
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
@@ -468,13 +472,13 @@ def proc4(conf):
     dnds_calculate(mutations)
 
 def proc5(conf):
+    '''analytical solution'''
     params = gene_rank_and_mutate_parameters()
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
     matrices = snpcount(mutations)
-    #dnds_calculate(mutations)
-    genefreqs = gds_gene_rank(mutations, params)
+    genefreqs = lines_gene_rank(mutations, params)
     #genefreqs = {key:value for key,value in genefreqs}
     genecoords = get_genecoordinates(record)
     with open('genecoords.txt', 'wb') as fp:

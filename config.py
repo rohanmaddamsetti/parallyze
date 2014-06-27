@@ -3,7 +3,7 @@
 #Don't delete quote marks
 #To run default data, leave all spaces empty
 
-PROCEDURE = '4'
+PROCEDURE = '1'
 
 REF_GENOME = '''
 reference.gbk
