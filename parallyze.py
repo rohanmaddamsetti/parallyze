@@ -303,12 +303,14 @@ def lines_gene_rank(filenames, params):
         for mut in filenames[fname]:
             if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
                 for tag in mut['locus_tag']:
-                    mut_genes[tag] = mut_genes.get(tag, 0) + 1
-                    if mut_genes[tag] > 1: 
-                        mut_genes[tag] = 1
-                    #record what genomes it is in
-    print mut_genes 
-    return mut_genes
+                    if tag not in mut_genes:
+                        mut_genes[tag] = set()
+                    mut_genes[tag].add(fname)
+    srt_mut_genes = zip(mut_genes.keys(), mut_genes.values())
+    srt_mut_genes = sorted(srt_mut_genes, key=lambda x: len(x[1]))
+    for row in srt_mut_genes:
+        print row[0], len(row[1]), row[1]
+    return srt_mut_genes
 
 '''
 def gds_gene_rank(filenames, params):
