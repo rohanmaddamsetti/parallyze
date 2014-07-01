@@ -453,7 +453,7 @@ def proc1(conf):
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
-    `matrices = snpcount(mutations)
+    matrices = snpcount(mutations)
     genefreqs = lines_gene_rank(mutations, params)
     #genefreqs = {key:value for key,value in genefreqs}
     genecoords = get_genecoordinates(record)
