@@ -42,7 +42,7 @@ def file_list(fs):
 def get_config():
     '''returns object that holds procedure name, ref file name, and diff file names'''
     conf={}
-    if config.PROCEDURE in ['1','2','3','4']:  
+    if config.PROCEDURE in ['1','2','3','4', '5', '6']:  
         ref = config.REF_GENOME.strip()
         assert os.path.isfile(ref)
         assert ref.endswith('.gb') or ref.endswith('.gbk')
@@ -453,7 +453,7 @@ def proc1(conf):
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
-    matrices = snpcount(mutations)
+    `matrices = snpcount(mutations)
     genefreqs = lines_gene_rank(mutations, params)
     #genefreqs = {key:value for key,value in genefreqs}
     genecoords = get_genecoordinates(record)
@@ -489,6 +489,19 @@ def proc5(conf):
     write_gene_mut_counts(genecoords, mut_sites)
     write_gd_gene_mut_counts(genecoords, genefreqs)
 
+def proc6(conf):
+    '''Mike's: number of lines mutating in this particular gene'''
+    params = gene_rank_and_mutate_parameters()
+    record = make_record(conf['ref'])
+    refseq = get_refseq(record)
+    mutations = parse_gdfiles(conf['diffs'], refseq)
+    matrices = snpcount(mutations)
+    genefreqs = lines_gene_rank(mutations, params)
+    #genefreqs = {key:value for key,value in genefreqs}
+    genecoords = get_genecoordinates(record)
+    with open('genecoords.txt', 'wb') as fp:
+        fp.write(str(genecoords))
+
 def main():
     parser = argparse.ArgumentParser()
     #parser.add_argument(dest='config', help="Config.py file should be in working folder.")
@@ -507,6 +520,8 @@ def main():
 	    proc4(conf)
     elif conf['procedure'] == '5':
         proc5(conf)
+    elif conf['procedure'] == '6':
+        proc6(conf)
 
 main()
 
