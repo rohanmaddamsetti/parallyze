@@ -281,7 +281,7 @@ def gene_rank_and_mutate_parameters():
     rank_and_mut_params['intergenic'] = input("Include intergenic SNPs in the analysis? 0 or 1: ")
     rank_and_mut_params['number_of_top_genes'] = int(input("How many of the most frequently mutated genes would you like displayed? "))
 #    rank_and_mut_params['generations'] = input("For how many generations did your experiment run? ")
-    rank_and_mut_params['replicates'] = input("How many replicates would you like? ")
+    rank_and_mut_params['replicates'] = input("How many replicates would you like? (If doing procedure 6, enter any number here")
     print
     return rank_and_mut_params
 
@@ -307,7 +307,7 @@ def lines_gene_rank(filenames, params):
                         mut_genes[tag] = set()
                     mut_genes[tag].add(fname)
     srt_mut_genes = zip(mut_genes.keys(), mut_genes.values())
-    srt_mut_genes = sorted(srt_mut_genes, key=lambda x: len(x[1]))
+    srt_mut_genes = sorted(srt_mut_genes, key=lambda x: len(x[1]), reverse = True)
     for row in srt_mut_genes:
         print row[0], len(row[1]), row[1]
     return srt_mut_genes
