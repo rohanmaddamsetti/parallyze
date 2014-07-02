@@ -25,7 +25,6 @@ from Bio import SeqFeature
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import IUPAC
-#from Bio.Seq import MutableSeq
 
 from numpy import random
 import numpy as np
@@ -281,7 +280,7 @@ def gene_rank_and_mutate_parameters():
     rank_and_mut_params['intergenic'] = input("Include intergenic SNPs in the analysis? 0 or 1: ")
     rank_and_mut_params['number_of_top_genes'] = int(input("How many of the most frequently mutated genes would you like displayed? "))
 #    rank_and_mut_params['generations'] = input("For how many generations did your experiment run? ")
-    rank_and_mut_params['replicates'] = input("How many replicates would you like? (If doing procedure 6, enter any number here")
+    rank_and_mut_params['replicates'] = input("How many replicates would you like? (If doing procedure 6, enter any number here) ")
     print
     return rank_and_mut_params
 
@@ -414,6 +413,14 @@ def write_gd_gene_mut_counts(genecoords, gd_genes):
                 muts.append(0)
             outfp.write(', '.join([str(c) for c in muts]) + '\n')
 
+def write_proc6_locus_mut_counts(linesmut):
+    header = 'locus_tag, number_of_genomes, genomes'
+    with open('locus_mut_counts.csv', 'wb') as outfp:
+        outfp.write(header + '\n')
+        for locus, sets, genomes in linesmut:
+            row = [locus]
+            outfp.write(', '.join([str(c) for c in row]) + '\n')
+
 def dnds_calculate(diff_dict):
     '''input: the output from parsed gd files
     goal: count the SNP mutation types for dN/dS, intergenic, etc
@@ -498,9 +505,10 @@ def proc6(conf):
     matrices = snpcount(mutations)
     genefreqs = lines_gene_rank(mutations, params)
     #genefreqs = {key:value for key,value in genefreqs}
-    genecoords = get_genecoordinates(record)
-    with open('genecoords.txt', 'wb') as fp:
-        fp.write(str(genecoords))
+    #genecoords = get_genecoordinates(record)
+    #with open('genecoords.txt', 'wb') as fp:
+    #    fp.write(str(genecoords))
+    write_proc6_locus_mut_counts(genefreqs)
 
 def main():
     parser = argparse.ArgumentParser()
