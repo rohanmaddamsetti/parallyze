@@ -414,12 +414,14 @@ def write_gd_gene_mut_counts(genecoords, gd_genes):
             outfp.write(', '.join([str(c) for c in muts]) + '\n')
 
 def write_proc6_locus_mut_counts(linesmut):
-    header = 'locus_tag, number_of_genomes, genomes'
+    header = 'locus_tag; genomes'
     with open('locus_mut_counts.csv', 'wb') as outfp:
         outfp.write(header + '\n')
-        for locus, sets, genomes in linesmut:
-            row = [locus]
-            outfp.write(', '.join([str(c) for c in row]) + '\n')
+        for row in linesmut:
+            locus = row[0]
+            genomes = row[1]
+            outfp.write('{}; '.format(locus))
+            outfp.write(', '.join([str(g) for g in genomes]) + '\n')
 
 def dnds_calculate(diff_dict):
     '''input: the output from parsed gd files
