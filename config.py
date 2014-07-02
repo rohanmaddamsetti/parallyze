@@ -3,10 +3,10 @@
 #Don't delete quote marks
 #To run default data, leave all spaces empty
 
-PROCEDURE ='1'
+PROCEDURE ='6'
 
 REF_GENOME = '''
-reference.gbk
+REL606.2.gbk
 '''
 
 GENOME_DIFFS = '''

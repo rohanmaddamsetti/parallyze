@@ -3,7 +3,7 @@
 PROCEDURE = '1'
 
 REF_GENOME = '''
-reference.gbk
+REL606.2.gbk
 '''
 
 GENOME_DIFFS = '''
