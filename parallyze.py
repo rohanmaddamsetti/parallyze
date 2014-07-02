@@ -425,7 +425,6 @@ def dnds_calculate(diff_dict):
     '''input: the output from parsed gd files
     goal: count the SNP mutation types for dN/dS, intergenic, etc
     output: dict of dict of a count'''
-    muttypes = {}
 #    for fname in mutations:
 #        for mut in mutations[fname]:
 #            if mut['mut_type'] == 'SNP': 
@@ -442,7 +441,7 @@ def dnds_calculate(diff_dict):
         print 'SNP mutation type', str.keyvalue(muttypes[fname]), '\n'
     return muttypes
     '''
-
+    muttypes = {}
     for diff_name, mutlist in diff_dict.iteritems():
         muttype_dict = {'synonymous':0, 'nonsynonymous':0, 'intergenic':0, 'noncoding':0, 'pseudogene':0}
         for mutation in mutlist:
