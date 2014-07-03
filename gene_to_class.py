@@ -17,5 +17,21 @@ class Gene(object):
         return '{} ({}): ({},{}) A={} G={} C={} T={}'.format(self.gene_name, self.locus_tag, self.my_start, self.my_end, self.A, self.G, self.C, self.T)
 
 def get_genecoordinates(record):
-    pass
+    geneinfo = {}
+    refseq = list(record.seq)
+    for i in record.features:
+        if i.type == 'CDS':
+            Gene.my_start = int(i.location.start)
+            Gene.my_end = int(i.location.end)
+            Gene.locus_tag = i.qualifiers['locus_tag'][0]
+            try:
+                Gene.gene_name = i.qualifiers['gene'][0]
+            except KeyError:
+                Gene.gene_name = 'none'
+            for base in refseq[Gene.my_start:Gene.my_end]:
+                Gene._ = Gene._.get(base,0) +  1
+            geneinfo.append(Gene)
+    print '\n', 'Reference genome list (1st 10): gene name, locus_tag, start, stop, A, G, C, T', '\n', geneinfo[:10]
+    return geneinfo
+   
 
