@@ -10,7 +10,8 @@ Things to do:
 6. dN/dS ratio
 7. get genes that positions fall into. have # of times hit, not just hit/nothit (best method for this? locus tag? gene? (do intergenic now - intragenic later)
 8. sum, across all lines, # of mutations per gene, for experimental data (done) and simulated data - divide by reps for avg. 
-9. print bar graphs? 
+9. print bar graphs?
+10. change lists/dictionaries to dicts/Classes 
 '''     
 
 import argparse
