@@ -167,6 +167,7 @@ def get_genecoordinates(record):
             geneinfo.append(Gene)
     print '\n', 'Reference genome list (1st 10): gene name, locus_tag, start, stop, A, G, C, T', '\n', geneinfo[:10]
     return geneinfo
+            #jkjk see elstoich/line100
      '''
      
 def get_genecoordinates(record):
@@ -195,6 +196,116 @@ def str_keyvalue(data):
 
 #is this appropriate refgenome? there are multiple - maybe? REL606.6 
 #need updated breseq?
+
+'''
+
+class gd(object):
+
+    def __init__(self, mut_type, mut_id, parent_ids, seq_id, position, new_base, snp_type):
+        self.mut_type = mut_type
+        self.mut_id = mut_id
+        self.parent_ids = parent_ids
+        self.seq_id = seq_id
+        self.position = position
+        self.new_base = new_base
+        self.snp_type = snp_type
+                #parent_ids: can have two values in one slot?
+                #have categories some kind of def... self.snp_type = 'N/A' off
+                #the bat above, then define if necessary (for diff't mut types)
+
+
+def parse_gdfiles(filenames, refseq):
+    #input: conf['diffs'] and conf['ref']
+    #:returns dict of gdfile names, each of which contains a list of sequential #s;
+    #each # corresponds to a dictionary for each mutation (contains key and value)
+    alldiffs={}
+    #disregarded_evidence = ['#', 'JC', 'RA', 'UN', 'MC', 'NOTE']
+    for fname in filenames:
+        alldiffs[fname] = []
+        with open(fname) as fp:
+            for line in fp: 
+                #if line.startswith(i) for i in disregard_evidence:
+                if line.startswith('#') or \
+                    line.startswith('JC') or \
+                    line.startswith('RA') or \
+                    line.startswith('UN') or \
+                    line.startswith('MC') or \
+                    line.startswith('NOTE'):
+                    continue
+                line = line.split('\t')
+                data = {}
+                mut_type = line[0]
+                mut_id = line[1]
+                data['mut_type'] = line[0]
+                data['mut_id'] = line[1]
+                data['parent_ids'] = line[2].split(',')
+                data['seq_id'] = line[3]
+                data['position'] = int(line[4])-1
+                if mut_type == 'SNP':
+                    data['new_base'] = line[5]
+                    for pair in line[6:]:
+                        key,_,value = pair.partition('=')
+                        data[key.strip()] = value.strip()
+                    data['gene_name'] = [gene.strip() for gene in data['gene_name'].split('/')]
+                    data['locus_tag'] = [tag.strip() for tag in data['locus_tag'].split('/')]
+
+                #        gene_names = data['gene_name']
+                #        data['gene_name'] = []
+                #        for name in gene_names.split('/'):
+                #            data['gene_name'].append(name.strip())
+                #        data['gene_name'] =[value.strip()]
+                #    if data['snp_type'] == 'intergenic':
+                #        data[value] = value.split('/')
+                    if data['snp_type'] in ['nonsynonymous', 'synonymous'] and data['gene_strand'] == '<':
+                        data['new_base'] = complementary_base(line[5])
+                    if data['snp_type'] in ['nonsynonymous', 'synonymous']:
+                        data['codon_position'] = int(data['codon_position']) - 1
+                        data['old_base'] = data['codon_ref_seq'][data['codon_position']]
+#                        if data['old_base'] == data['new_base']:
+#                            print 'WARNING: new base same as old base', ' ', data['snp_type'], ' inconsistencey in gdfile ', fname
+#                            print str_keyvalue(data)
+#                            print 'refseq old_base:', refseq[data['position']]
+#                            start = data['position']-2
+#                            end = start+4
+#                            print 'refseq sequence:', '({}:{})'.format(start,end-1), ''.join(refseq[start:end]), '\n'      
+                    elif data['snp_type'] in ['intergenic', 'pseudogene', 'noncoding']:
+                        #print data['position']
+                        data['old_base'] = refseq[data['position']]
+#                        if data['snp_type'] == 'noncoding':
+#                            print '^^'*30, fname, str_keyvalue(data), '^^'*30
+                        if data['new_base'] == data['old_base']:
+                            print 'WARNING: new base same as old base', ' ', data['snp_type'], '  problem with refgenome or indexing'
+                    else:
+                        print 'ERROR parsing SNP ', data['snp_type']
+                elif mut_type == 'SUB':
+                    data['size'] = int(line[5])
+                    data['new_seq'] = line[6]
+                elif mut_type == 'DEL':
+                    data['size'] = int(line[5])
+                elif mut_type=='INS':
+                    data['new_seq'] = line[5]
+                elif mut_type == 'MOB':
+                    data['repeat_name'] = line[5]
+                    data['strand'] = line[6]
+                    data['duplication_size'] = int(line[7])
+                elif mut_type == 'AMP':
+                    data['size'] = int(line[5])
+                    data['new_copy_number'] = int(line[6])
+                elif mut_type == 'CON':
+                    data['size'] = int(line[5])
+                    data['region'] = line[6]
+                elif mut_type == 'INV':
+                    data['size'] = int(line[5])
+                alldiffs[fname].append(data)
+    #for gdname, mutation_list in alldiffs.iteritems():
+        #print "File:", gdname
+        #for list_position, mutation in enumerate(mutation_list):
+            #if list_position < 1:
+                #print "Mutation", list_position, "\n", str_keyvalue(mutation), "\n", "*" * 40
+        ###print dbug_dict[f_mutid], '\n'
+        ###dbug_dict = alldiffs[alldiffs.keys()[0]] 
+    return alldiffs
+'''
 
 def parse_gdfiles(filenames, refseq):
     '''input: conf['diffs'] and conf['ref']
