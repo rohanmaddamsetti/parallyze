@@ -135,8 +135,6 @@ def get_refseq(record):
     print
     return refseq
 
-##
-
 class Gene(object):
 
     def __init__(self, feature):
@@ -182,7 +180,6 @@ def get_genecoordinates(record):
     print '\n', 'Reference genome list (1st 10): gene name, locus_tag, start, stop, A, G, C, T', '\n', geneinfo[:10]
     return geneinfo
 
-##
 ''' 
 def get_genecoordinates(record):
     #input: record file from reference (i.e., ref as record file)
