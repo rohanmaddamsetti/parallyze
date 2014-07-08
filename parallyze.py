@@ -5,7 +5,7 @@ Things to do:
 1. change genefreqs and genecoords to use the locus tag because many gene names are 'none'
 2. add asserts for list sizes to make sure results are sane
 3. change locations of mutations to be dropped to align with included/specified gd mutations (ie, synon, non-synon, non-coding, etc)
-4. change from #muts/gene to #lines/gene
+(done) 4. change from #muts/gene to #lines/gene
 5. analytic solution for SNPs
 6. dN/dS ratio
 7. get genes that positions fall into. have # of times hit, not just hit/nothit (best method for this? locus tag? gene? (do intergenic now - intragenic later)
@@ -61,36 +61,6 @@ def get_config():
         conf['diffs'] = config_default.GENOME_DIFFS
         return conf
 
-'''
-def base_to_int(i):
-    if i == 'A':
-        return 0
-    elif i == 'G':
-        return 1
-    elif i == 'C':
-        return 2
-    else:
-        return 3
-
-def int_to_base(i):
-    if i == 0:
-        return 'A'
-    elif i == 1:
-        return 'G'
-    elif i == 2:
-        return 'C'
-    else:
-        return 'T'
-
-def seq_to_int(seq):
-    converted_to_int=[base_to_int(b) for b in seq]
-    return converted_to_int
-
-def int_to_seq(seq):
-    converted_to_seq=[int_to_base(b) for b in seq]
-    return converted_to_seq
-'''
-
 def complementary_base(base):
     if base == 'A':
         return 'T'
@@ -100,6 +70,27 @@ def complementary_base(base):
         return 'G'
     elif base == 'G':
         return 'C'
+
+def gene_rank_and_mutate_parameters():
+    params = {}
+    params['synonymous'] = input("Include synonymous mutations in the analysis? 0 for N, 1 for Y: ")
+    params['noncoding'] = input("Include noncoding SNPs in the analysis? 0 or 1: ")
+    params['pseudogene'] = input("Include SNPs in psuedogenes in the analysis? 0 or 1: ")
+    params['intergenic'] = input("Include intergenic SNPs in the analysis? 0 or 1: ")
+    params['number_of_top_genes'] = int(input("How many of the most frequently mutated genes would you like displayed? "))
+#   params['generations'] = input("For how many generations did your experiment run? ")
+    params['replicates'] = input("How many replicates would you like? (If doing procedure 6, enter any number here) ")
+    rank_mut_types = ['nonsynonymous']
+    if params['synonymous'] == 1:
+        rank_mut_types.append('synonymous')
+    if params['noncoding'] == 1:
+        rank_mut_types.append('noncoding')
+    if params['pseudogene'] == 1:
+        rank_mut_types.append('pseudogene')
+    if params['intergenic'] == 1:
+        rank_mut_types.append('intergenic')
+    print
+    return rank_mut_types, params['number_of_top_genes'], params['replicates']
 
 def make_record(ref_file):
     '''input:conf['ref'] 
@@ -171,36 +162,24 @@ class Gene(object):
 
 def get_genecoordinates(record):
     geneinfo = {}
+    total_bases = {'A':0, 'C':0, 'G':0, 'T':0, 'total':0}
     refseq = list(record.seq)
     for feature in record.features:
         if feature.type == 'CDS':
             this_gene = Gene(feature)
             this_gene.count_bases(refseq)
             geneinfo[this_gene.locus_tag] = this_gene
-    print '\n', 'Reference genome list (1st 10): gene name, locus_tag, start, stop, A, G, C, T', '\n', geneinfo[:10]
-    return geneinfo
+            total_bases['A'] += this_gene.A
+            total_bases['G'] += this_gene.G
+            total_bases['C'] += this_gene.C
+            total_bases['T'] += this_gene.T
+                    #are any CDSs non-coding/intergenic/etc? i.e., from a source that the gd file wouldn't tabulate?
+    total_bases['total'] = total_bases['A'] + total_bases['G'] + total_bases['C'] + total_bases['T']
+    print '\n', 'total A, G, C, T, TOTAL', total_bases['A'], total_bases['G'], total_bases['C'], total_bases['T'], total_bases['total']
+    #print '\n', 'Reference genome list (1st 10): gene name, locus_tag, start, stop, A, G, C, T', '\n', geneinfo[:10]
+        #geneinfo is now unhashable type: b/c of data restructure?
+    return geneinfo, total_bases
 
-''' 
-def get_genecoordinates(record):
-    #input: record file from reference (i.e., ref as record file)
-    #get all IDed genes and their beginning and end position;
-    #store in list of tuples
-    geneinfo = []
-    for i in record.features:
-        if i.type == 'CDS': #or i[type] if dictionary - tab everything below
-        #add non-CDS records later? (tRNA, lonely 'gene', repeat_region, misc_feature
-            my_start = int(i.location.start)
-            my_end = int(i.location.end)
-            locus_tag = i.qualifiers['locus_tag'][0]
-            try:
-                 gene_name = i.qualifiers['gene'][0]
-            except KeyError: 
-                gene_name = 'none'
-            mytuple = (my_start, my_end, gene_name, locus_tag)
-            geneinfo.append(mytuple)
-    print '\n', 'Reference genome gene list (1st 10): start position, end pos, gene, locus_tag', '\n', geneinfo[:10]
-    return geneinfo
-'''
 def str_keyvalue(data):
     s = '\n'.join([str(key)+': '+str(data[key]) for key in data])
     return s
@@ -429,35 +408,14 @@ def snpcount(diff_dict):
         print 'to/from:', '\n', str_keyvalue(matrixdict[filename]), '\n'
     return matrixdict
 
-def gene_rank_and_mutate_parameters():
-    rank_and_mut_params = {}
-    rank_and_mut_params['synonymous'] = input("Include synonymous mutations in the analysis? 0 for N, 1 for Y: ")
-    rank_and_mut_params['noncoding'] = input("Include noncoding SNPs in the analysis? 0 or 1: ")
-    rank_and_mut_params['pseudogene'] = input("Include SNPs in psuedogenes in the analysis? 0 or 1: ")
-    rank_and_mut_params['intergenic'] = input("Include intergenic SNPs in the analysis? 0 or 1: ")
-    rank_and_mut_params['number_of_top_genes'] = int(input("How many of the most frequently mutated genes would you like displayed? "))
-#    rank_and_mut_params['generations'] = input("For how many generations did your experiment run? ")
-    rank_and_mut_params['replicates'] = input("How many replicates would you like? (If doing procedure 6, enter any number here) ")
-    print
-    return rank_and_mut_params
-
 def lines_gene_rank(filenames, params):
     '''input: mutations, from parse_gdfiles
     given user input #x, list # mutated lines/gene'''
     mut_genes = {}
-    rank_mut_types = ['nonsynonymous']
-    if params['synonymous'] == 1:
-        rank_mut_types.append('synonymous')
-    if params['noncoding'] == 1:
-        rank_mut_types.append('noncoding')
-    if params['pseudogene'] == 1:
-        rank_mut_types.append('pseudogene')
-    if params['intergenic'] == 1:
-        rank_mut_types.append('intergenic')
     for fname in filenames: #if a file/line has any number of a particular mut, add 1
                             #so max number for a gene is the number of files
         for mut in filenames[fname]:
-            if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
+            if mut['mut_type'] == 'SNP' and mut['snp_type'] in params:
                 for tag in mut['locus_tag']:
                     if tag not in mut_genes:
                         mut_genes[tag] = set()
@@ -467,36 +425,6 @@ def lines_gene_rank(filenames, params):
     for row in srt_mut_genes:
         print row[0], len(row[1]), row[1]
     return srt_mut_genes
-
-'''
-def gds_gene_rank(filenames, params):
-    #input: mutations, from parse_gdfiles
-    #given user input #x, list x most mutated genes across all gdfiles
-    #(#muts/gene across all lines)
-    mut_genes = {}
-    rank_mut_types = ['nonsynonymous']
-    if params['synonymous'] == 1:
-        rank_mut_types.append('synonymous')
-    if params['noncoding'] == 1:
-        rank_mut_types.append('noncoding')
-    if params['pseudogene'] == 1:
-        rank_mut_types.append('pseudogene')
-    if params['intergenic'] == 1:
-        rank_mut_types.append('intergenic')
-    for fname in filenames: 
-        for mut in filenames[fname]:
-            if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
-                for tag in mut['locus_tag']:
-                    mut_genes[tag] = mut_genes.get(tag, 0) + 1
-    print mut_genes
-    return mut_genes
-    #sorted_mut_genes = sorted(mut_genes.iteritems(), key=operator.itemgetter(1), reverse = True)
-    #mut_genes_number = int(len(sorted_mut_genes))
-    #print 'The', params['number_of_top_genes'], 'most mutated genes of all', mut_genes_number, 'mutated genes:'
-    #print sorted_mut_genes[:params['number_of_top_genes']]
-    #return sorted_mut_genes
-    ##diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive?
-'''
 
 def snpmutate(matrix, num_replicates, refseq_arr): 
     '''input: matrixdict and refseq as numpy array from snpcount and parse_ref, respectively
@@ -614,14 +542,14 @@ def dnds_calculate(diff_dict):
 
 def proc1(conf):
     '''simulated solution'''
-    params = gene_rank_and_mutate_parameters()
+    params, topgenes, reps = gene_rank_and_mutate_parameters()
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
     matrices = snpcount(mutations)
     genefreqs = lines_gene_rank(mutations, params)
     #genefreqs = {key:value for key,value in genefreqs}
-    genecoords = get_genecoordinates(record)
+    genecoords, total_bases = get_genecoordinates(record)
     with open('genecoords.txt', 'wb') as fp:
         fp.write(str(genecoords))
     mut_sites = get_mut_sites(matrices, refseq, params['replicates'])
@@ -632,7 +560,7 @@ def proc1(conf):
 
 def proc4(conf):
     '''dnds calculation'''
-    params = gene_rank_and_mutate_parameters()
+    params, topgenes, reps = gene_rank_and_mutate_parameters()
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
@@ -640,30 +568,30 @@ def proc4(conf):
 
 def proc5(conf):
     '''analytical solution'''
-    params = gene_rank_and_mutate_parameters()
+    params, topgenes, reps = gene_rank_and_mutate_parameters()
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
     matrices = snpcount(mutations)
     genefreqs = lines_gene_rank(mutations, params)
     #genefreqs = {key:value for key,value in genefreqs}
-    genecoords = get_genecoordinates(record)
+    genecoords, total_bases = get_genecoordinates(record)
     with open('genecoords.txt', 'wb') as fp:
         fp.write(str(genecoords))
-    mut_sites = get_mut_sites(matrices, refseq, params['replicates'])
+    mut_sites = get_mut_sites(matrices, refseq, params['replicates']) #last should be reps
     write_gene_mut_counts(genecoords, mut_sites)
     write_gd_gene_mut_counts(genecoords, genefreqs)
 
 def proc6(conf):
     '''Mike's: number of lines mutating in this particular gene'''
-    params = gene_rank_and_mutate_parameters()
+    params, topgenes, reps = gene_rank_and_mutate_parameters()
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
     matrices = snpcount(mutations)
     genefreqs = lines_gene_rank(mutations, params)
     #genefreqs = {key:value for key,value in genefreqs}
-    #genecoords = get_genecoordinates(record)
+    #genecoords, total_bases = get_genecoordinates(record)   #why is this commented out? cuz I'm not here yet?
     #with open('genecoords.txt', 'wb') as fp:
     #    fp.write(str(genecoords))
     write_proc6_locus_mut_counts(genefreqs)
