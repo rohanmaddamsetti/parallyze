@@ -422,7 +422,8 @@ def lines_gene_rank(filenames, params):
                     mut_genes[tag].add(fname)
     srt_mut_genes = zip(mut_genes.keys(), mut_genes.values())
     srt_mut_genes = sorted(srt_mut_genes, key=lambda x: len(x[1]), reverse = True)
-    for row in srt_mut_genes:
+    print 'Some of the top mutating loci'
+    for row in srt_mut_genes[:10]:
         print row[0], len(row[1]), row[1]
     return srt_mut_genes
 
@@ -552,7 +553,7 @@ def proc1(conf):
     genecoords, total_bases = get_genecoordinates(record)
     with open('genecoords.txt', 'wb') as fp:
         fp.write(str(genecoords))
-    mut_sites = get_mut_sites(matrices, refseq, params['replicates'])
+    mut_sites = get_mut_sites(matrices, refseq, params)
     write_gene_mut_counts(genecoords, mut_sites)
     write_gd_gene_mut_counts(genecoords, genefreqs)
 
@@ -591,7 +592,7 @@ def proc6(conf):
     matrices = snpcount(mutations)
     genefreqs = lines_gene_rank(mutations, params)
     #genefreqs = {key:value for key,value in genefreqs}
-    #genecoords, total_bases = get_genecoordinates(record)   #why is this commented out? cuz I'm not here yet?
+    genecoords, total_bases = get_genecoordinates(record)   #why is this commented out? cuz I'm not here yet?
     #with open('genecoords.txt', 'wb') as fp:
     #    fp.write(str(genecoords))
     write_proc6_locus_mut_counts(genefreqs)
