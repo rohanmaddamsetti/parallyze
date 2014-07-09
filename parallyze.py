@@ -478,8 +478,8 @@ def write_gene_mut_counts(genecoords, mut_sites):
     header = 'gene, ' + ', '.join([filename for filename in mut_sites])
     with open('sim_mut_counts.csv', 'wb') as outfp:
         outfp.write(header + '\n')
-        for cds in genecoords:
-            row = cds.features.locus_tag
+        for locus_tag in genecoords:
+            cds = genecoords[locus_tag]
             for filename in mut_sites:
                 line_muts = 0
                 for origbase in mut_sites[filename]:
