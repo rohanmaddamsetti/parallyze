@@ -22,7 +22,7 @@ as well as the length of the experiment.
 
 In all cases, the user should be able to specify only examining coding regions, or just nonsynonymous and synonymous mutations, or just synonymous mutations.
 
-###Procedure 1: Gene mutation frequency. For each gene, what is the frequency of mutation for all of my pooled experimental lineages compared to a null distribution? 
+###Procedure 1: Gene mutation frequency. For each gene, what is the frequency of mutation for all of my pooled experimental lineages compared to a simulated null distribution? 
 
 Genomes from evolution experiment. Assume all independent, i.e. star phylogeny.
 
@@ -61,6 +61,10 @@ This procedure could be extended to clinical or epidemiological isolates in the 
 ###Procedure 4: What are the relative counts of dN, dS, and intergenic mutations at gene and genome level?
 
 This should be straightforward from the genome diff format.
+
+###Procedure 5: Gene mutation frequency. For each gene, what is the frequency of mutation for all of my pooled experimental lineages compared to an analytical null distribution? 
+
+###Procedure 6: Number of lines mutating in each particular gene. /done - integrated into other procedures
 
 ###Datasets for Testing
 
