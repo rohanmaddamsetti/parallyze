@@ -203,7 +203,6 @@ class gd(object):
                 #have categories some kind of def... self.snp_type = 'N/A' off
                 #the bat above, then define if necessary (for diff't mut types)
 
-
 def parse_gdfiles(filenames, refseq):
     #input: conf['diffs'] and conf['ref']
     #:returns dict of gdfile names, each of which contains a list of sequential #s;
@@ -465,6 +464,7 @@ def get_mut_sites(matrices, refseq, num_replicates):
     for filename in matrices:
         print '\n** generating mutation sites for', filename
         mut_sites[filename] = snpmutate(matrices[filename], num_replicates, refseq_arr)
+    print
     '''
     mut_sites = { 'filename1': { 'A': array(row for reps, columns for mut position indices), 
                                  'T': array(...) ... },
@@ -478,6 +478,21 @@ def write_gene_mut_counts(genecoords, mut_sites):
     header = 'gene, ' + ', '.join([filename for filename in mut_sites])
     with open('sim_mut_counts.csv', 'wb') as outfp:
         outfp.write(header + '\n')
+        for cds in genecoords:
+            row = cds.features.locus_tag
+            for filename in mut_sites:
+                line_muts = 0
+                for origbase in mut_sites[filename]:
+                    line_muts += ((mut_sites[filename][origbase] >= start) & (mut_sites[filename][origbase] < end)).sum()
+                row.append(line_muts)
+            outfp.write(', '.join([str(c) for c in row]) + '\n')
+
+'''
+
+def write_gene_mut_counts(genecoords, mut_sites):
+    header = 'gene, ' + ', '.join([filename for filename in mut_sites])
+    with open('sim_mut_counts.csv', 'wb') as outfp:
+        outfp.write(header + '\n')
         for start, end, name, tag in genecoords:
             row = [tag]
             for filename in mut_sites:
@@ -486,6 +501,8 @@ def write_gene_mut_counts(genecoords, mut_sites):
                     line_muts += ((mut_sites[filename][origbase] >= start) & (mut_sites[filename][origbase] < end)).sum()
                 row.append(line_muts)
             outfp.write(', '.join([str(c) for c in row]) + '\n')
+
+'''
 
 def write_gd_gene_mut_counts(genecoords, gd_genes):
     header = 'gene, count'
@@ -541,6 +558,8 @@ def dnds_calculate(diff_dict):
         print 'SNP mutation type', str.keyvalue(muttypes[fname]), '\n'
     return muttypes
 
+#def introsteps(): #easily done?
+
 def proc1(conf):
     '''simulated solution'''
     params, topgenes, reps = gene_rank_and_mutate_parameters()
@@ -553,7 +572,7 @@ def proc1(conf):
     genecoords, total_bases = get_genecoordinates(record)
     with open('genecoords.txt', 'wb') as fp:
         fp.write(str(genecoords))
-    mut_sites = get_mut_sites(matrices, refseq, params)
+    mut_sites = get_mut_sites(matrices, refseq, reps)
     write_gene_mut_counts(genecoords, mut_sites)
     write_gd_gene_mut_counts(genecoords, genefreqs)
 
