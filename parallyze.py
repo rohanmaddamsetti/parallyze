@@ -143,7 +143,7 @@ def proc5(conf):
     write_gene_mut_counts(genecoords, mut_sites)
     write_gd_gene_mut_counts(genecoords, genefreqs)
 
-
+# NOTE: Updated for refactor
 def proc6(conf):
     '''Mike's: number of lines mutating in this particular gene'''
     record = utils.parse_genbank(conf.REF_GENOME)
