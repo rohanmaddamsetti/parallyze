@@ -32,8 +32,9 @@ class SimpleConfig(object):
                 key_types=self.key_types, target=self.parser_receiver())
         with open(self.fn, 'rb') as fp:
             for line in fp:
-                for symbol in line.strip().split():
-                    parser.send(symbol.strip())
+                if not line.startswith('#'):
+                    for symbol in line.strip().split():
+                        parser.send(symbol.strip())
             parser.send(None)
 
     @staticmethod
@@ -58,13 +59,23 @@ class SimpleConfig(object):
 
         while True:
             key, value = (yield)
-            value = [self.key_types[key](v) for v in value]
-            if len(value) == 1:
-                value = value[0]
+            value = self.convert_value(key, value)
 
             print '{k} : {v}'.format(k=key, v='\n'.join(value) \
                                     if type(value)==list else value)
             
             setattr(self, key, value)
             
-            
+    def convert_value(self, key, value):
+        ret = []
+        for v in value:
+            if self.key_types[key] == bool:
+                if v.upper() in ['TRUE', '1', 'YES']:
+                    ret.append(True)
+                else:
+                    ret.append(False)
+            else:
+                ret.append(self.key_types[key](v))
+        if len(ret) == 1:
+            ret = ret[0]
+        return ret

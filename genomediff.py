@@ -9,6 +9,7 @@ Contains class and parsing function(s) for genomediff files.
 '''
 
 import sys
+import os
 
 import utils
 from utils import complementary_base
@@ -27,15 +28,24 @@ class GenomeDiff(object):
         self.seq_id = seq_id
         self.position = position
 
-def parse_genomediff(gd_file, gb_record):
+    def __repr__(self):
+        return '{0}: {1} {2}'.format(hash(self), self.mut_type, self.seq_id)
+
+def parse_genomediff(gd_file, gb_record, genomediffs=None):
     '''
     Given a genomediff file, parse out the mutations and store them
     in GenomeDiff objects.
 
+    If a dict for genomediffs is provided, add the mutations
+    to that dict. Otherwise, create a new one.
+
     Returns a dictionary of all mutations keyed by mut_id.
     '''
 
-    genomediffs = {}
+    if genomediffs is None:
+        genomediffs = {}
+    else:
+        assert type(genomediffs) == dict
     
     with open(gd_file) as fp:
         for line in fp: 
@@ -79,8 +89,6 @@ def parse_genomediff(gd_file, gb_record):
                 gd.gene_name = [gene.strip() for gene in gd.gene_name.split('/')]
                 assert hasattr(gd, 'locus_tag')
                 gd.locus_tag = [tag.strip() for tag in gd.locus_tag.split('/')]
-                
-                assert hasattr(gd, 'old_base')
                 
                 if gd.snp_type in ['nonsynonymous', 'synonymous']:
 
@@ -135,9 +143,12 @@ def parse_genomediff(gd_file, gb_record):
 
             elif mut_type == 'INV':
                 gd.size = int(line[5])
+            
+            # Get a unique key for addressing this mutation
+            key = hash(gd)
+            # Store the line for this mutation
+            gd.line = os.path.basename(gd_file)
 
-            genome_diffs[mut_id] = gd
+            genomediffs[key] = gd
 
-    return alldiffs
-
-
+    return genomediffs
