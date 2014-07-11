@@ -48,23 +48,6 @@ def write_gene_mut_counts(genecoords, mut_sites):
                 row.append(line_muts)
             outfp.write(', '.join([str(c) for c in row]) + '\n')
 
-'''
-
-def write_gene_mut_counts(genecoords, mut_sites):
-    header = 'gene, ' + ', '.join([filename for filename in mut_sites])
-    with open('sim_mut_counts.csv', 'wb') as outfp:
-        outfp.write(header + '\n')
-        for start, end, name, tag in genecoords:
-            row = [tag]
-            for filename in mut_sites:
-                line_muts = 0
-                for origbase in mut_sites[filename]:
-                    line_muts += ((mut_sites[filename][origbase] >= start) & (mut_sites[filename][origbase] < end)).sum()
-                row.append(line_muts)
-            outfp.write(', '.join([str(c) for c in row]) + '\n')
-
-'''
-
 # TODO: Update for refactor
 def write_gd_gene_mut_counts(genecoords, gd_genes):
     header = 'gene, count'

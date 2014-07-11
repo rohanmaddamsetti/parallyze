@@ -1,4 +1,6 @@
 '''
+gene.py
+
 Defines a Gene object, given a feature object from biopython's
 SeqIO module.
 '''
