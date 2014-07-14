@@ -156,7 +156,7 @@ def proc6(conf):
 
     genomediffs = {}
     for gd_file in conf.GENOMEDIFF_FILES:
-        parse_genomediff(gd_file, record, genomediffs)    
+        parse_genomediff(gd_file, record, genomediffs=genomediffs)    
    
     counts = mutated_lines_per_gene(genomediffs, conf.snp_types)
 
@@ -175,11 +175,11 @@ config_keys = { 'REF_GENOME': str,
                 'GENES_TO_DISPLAY': int }
 
 def main():
-    parser = argparse.ArgumentParser(prog='parallyze')
+    parser = argparse.ArgumentParser()
     parser.add_argument('--config', dest='config', 
         help="parallyze config file", default='parallyze.conf')
     parser.add_argument('--procedure', dest='procedure', type=int, 
-        default=6, choices=range(1,6))
+        default=6, choices=range(1,7))
     parser.add_argument('--synonymous', action='store_true')
     parser.add_argument('--noncoding', action='store_true')
     parser.add_argument('--pseudogene', action='store_true')
