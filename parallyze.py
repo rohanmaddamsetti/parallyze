@@ -75,6 +75,18 @@ def write_proc6_locus_mut_counts(linesmut):
 # TODO: Update for refactor
 def proc1(conf):
     '''simulated solution'''
+
+    '''
+    record = utils.parts_genbank(conf.REF_GENOME)
+    utils.print_genbank_summary(record)
+
+    genomediffs = {}
+    for gd_file in conf.GENOMEDIFF_FILES:
+        parse_genomediff(gd_file, record, genomediffs)
+
+    
+    ''' 
+
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
@@ -112,6 +124,16 @@ def proc4(conf):
 # TODO: Update for refactor
 def proc5(conf):
     '''analytical solution'''
+
+    '''
+    record = utils.parts_genbank(conf.REF_GENOME)
+    utils.print_genbank_summary(record)
+
+    genomediffs = {}
+    for gd_file in conf.GENOMEDIFF_FILES:
+        parse_genomediff(gd_file, record, genomediffs)
+    '''
+
     params, topgenes, reps = gene_rank_and_mutate_parameters()
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
@@ -128,7 +150,7 @@ def proc5(conf):
 
 # NOTE: Updated for refactor
 def proc6(conf):
-    '''Mike's: number of lines mutating in this particular gene'''
+    '''number of lines mutating in this particular gene'''
     record = utils.parse_genbank(conf.REF_GENOME)
     utils.print_genbank_summary(record)
 

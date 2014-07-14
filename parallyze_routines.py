@@ -33,16 +33,28 @@ def calculate_dNdS(genomediffs):
     return counts
 
 # TODO: Update for refactor
-def snpcount(diff_dict):
+def snpcount(genomediffs, snp_types):
     '''input: 'mutations' i.e., parsed gd files
     returns dictionary of gdfiles, each containing a matrix
     (i.e., dict of dicts) of SNP mutations - to and from base'''
+
+'''
+ tag_lines = {}
+
+    for key, gd in genomediffs.iteritems():
+        if gd.mut_type == 'SNP' and gd.snp_type in snp_types:
+            for tag in gd.locus_tag:
+                if tag not in tag_lines:
+                    tag_lines[tag] = set()
+                tag_lines[tag].add(gd.line)
+'''
+
     matrixdict = {}
-    for diff_name, mutlist in diff_dict.iteritems(): 
+    for key, gd in genomediffs.iteritems(): 
         snpmatrix={'A':{'G':0, 'C':0, 'T':0}, 'G':{'A':0, 'C':0, 'T':0},\
             'C':{'A':0, 'G':0, 'T':0}, 'T':{'A':0, 'C':0, 'G':0}}
-        for mutation in mutlist:
-            if mutation['mut_type']=='SNP':
+        for tag in genomediffs:
+            if gd.mut_type=='SNP':
                 old_base = mutation['old_base']
                 new_base = mutation['new_base']
                 snpmatrix[old_base][new_base] = snpmatrix[old_base].get(new_base,0) + 1
@@ -75,7 +87,7 @@ def mutated_lines_per_gene(genomediffs, snp_types):
     
     return sorted_tag_lines
 
-# TODO: Update for refactor
+# TODO: Update for refactor? low priority
 def snpmutate(matrix, num_replicates, refseq_arr): 
     '''input: matrixdict and refseq as numpy array from snpcount and parse_ref, respectively
     called by get_mut_sites
@@ -108,7 +120,7 @@ def snpmutate(matrix, num_replicates, refseq_arr):
     #print mut_sites
     return mut_sites
 
-# TODO: Refactor
+# TODO: Refactor? low priority
 def get_mut_sites(matrices, refseq, num_replicates):
     mut_sites = {}
     refseq_arr = np.array([c for c in refseq]) 
