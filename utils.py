@@ -49,7 +49,9 @@ def print_genbank_summary(gb_record):
     if 'taxonomy' in gb_record.annotations:
         print '#', '; '.join([t for t in gb_record.annotations['taxonomy']])
     print '#\n#\tLength:', len(gb_record.seq)
-    print '#\tA:', gb_record.seq.count('A'), '\tT:', gb_record.seq.count('T')
-    print '#\tG:', gb_record.seq.count('G'), '\tC:', gb_record.seq.count('C')
+    print '#\tA:', gb_record.seq.count('A'), \
+        '\tT:', gb_record.seq.count('T')
+    print '#\tG:', gb_record.seq.count('G'), \
+        '\tC:', gb_record.seq.count('C')
     gc = gb_record.seq.count('G') + gb_record.seq.count('C')
     print '#\t%GC:', 100.0 * gc / len(gb_record.seq), '\n'
