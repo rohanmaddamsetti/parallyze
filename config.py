@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 '''
+config.py
 
 Part of parallyze
 by Elizabeth Baird
