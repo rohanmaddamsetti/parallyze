@@ -9,8 +9,9 @@ Things to do:
 5. analytic solution for SNPs
 6. dN/dS ratio
 7. get genes that positions fall into. have # of times hit, not just hit/nothit (best method for this? locus tag? gene? (do intergenic now - intragenic later)
-8. sum, across all lines, # of mutations per gene, for experimental data (done) and simulated data - divide by reps for avg. 
+8. sum, across all lines, # of mutations per gene, for experimental data (done) and simulated data - divide by reps for avg.? 
 9. print bar graphs?
+10. condense/reformat/renumber/rearrage procedures
 '''     
 
 import argparse
@@ -75,7 +76,6 @@ def write_proc6_locus_mut_counts(linesmut):
 def proc1(conf):
     '''simulated solution'''
 
-    '''
     record = utils.parts_genbank(conf.REF_GENOME)
     utils.print_genbank_summary(record)
 
@@ -85,7 +85,6 @@ def proc1(conf):
 
     
     ''' 
-
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
     mutations = parse_gdfiles(conf['diffs'], refseq)
@@ -98,6 +97,7 @@ def proc1(conf):
     mut_sites = get_mut_sites(matrices, refseq, reps)
     write_gene_mut_counts(genecoords, mut_sites)
     write_gd_gene_mut_counts(genecoords, genefreqs)
+    '''
 
 '''old proc3 assumptions: Synonymous mutations are neutral, Mutations are independent of one another, No defects to DNA repair, Mutation rate is constant across the genome, There is only one chromosome'''
 
@@ -124,15 +124,16 @@ def proc4(conf):
 def proc5(conf):
     '''analytical solution'''
 
-    '''
-    record = utils.parts_genbank(conf.REF_GENOME)
+    record = utils.parse_genbank(conf.REF_GENOME)
     utils.print_genbank_summary(record)
 
     genomediffs = {}
     for gd_file in conf.GENOMEDIFF_FILES:
-        parse_genomediff(gd_file, record, genomediffs)
-    '''
+        parse_genomediff(gd_file, record, genomediffs = genomediffs)
 
+    snpcounting = snpcount(genomediffs, snp_types)
+
+    '''
     params, topgenes, reps = gene_rank_and_mutate_parameters()
     record = make_record(conf['ref'])
     refseq = get_refseq(record)
@@ -146,6 +147,7 @@ def proc5(conf):
     mut_sites = get_mut_sites(matrices, refseq, params['replicates']) #last should be reps
     write_gene_mut_counts(genecoords, mut_sites)
     write_gd_gene_mut_counts(genecoords, genefreqs)
+    '''
 
 # NOTE: Updated for refactor
 def proc6(conf):
@@ -166,6 +168,7 @@ def proc6(conf):
 
 config_keys = { 'REF_GENOME': str,
                 'GENOMEDIFF_FILES': str,
+                'NONSYNONYMOUS': bool,
                 'SYNONYMOUS': bool,
                 'NONCODING': bool,
                 'PSEUDOGENE': bool,
@@ -179,6 +182,7 @@ def main():
         help="parallyze config file", default='parallyze.conf')
     parser.add_argument('--procedure', dest='procedure', type=int, 
         default=6, choices=range(1,7))
+    parser.add_argument('--nonsynonymous', action='store_true')
     parser.add_argument('--synonymous', action='store_true')
     parser.add_argument('--noncoding', action='store_true')
     parser.add_argument('--pseudogene', action='store_true')
@@ -196,7 +200,9 @@ def main():
     with (optional) flags at runtime.
     '''
 
-    if args.synonymous:
+    if args.nonsynonymous:
+        conf.NONSYNONYMOUS = True
+   if args.synonymous:
         conf.SYNONYMOUS = True
     if args.noncoding:
         conf.NONCODING = True
@@ -215,7 +221,8 @@ def main():
     '''
 
     conf.snp_types = set()
-    conf.snp_types.add('nonsynonymous')
+    if conf.NONSYNONYMOUS:
+        conf.snp_types.add('nonsynonymous')
     if conf.SYNONYMOUS:
         conf.snp_types.add('synonymous')
     if conf.NONCODING:

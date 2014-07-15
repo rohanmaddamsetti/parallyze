@@ -38,30 +38,20 @@ def snpcount(genomediffs, snp_types):
     returns dictionary of gdfiles, each containing a matrix
     (i.e., dict of dicts) of SNP mutations - to and from base'''
 
-'''
- tag_lines = {}
-
-    for key, gd in genomediffs.iteritems():
-        if gd.mut_type == 'SNP' and gd.snp_type in snp_types:
-            for tag in gd.locus_tag:
-                if tag not in tag_lines:
-                    tag_lines[tag] = set()
-                tag_lines[tag].add(gd.line)
-'''
-
     matrixdict = {}
     for key, gd in genomediffs.iteritems(): 
         snpmatrix={'A':{'G':0, 'C':0, 'T':0}, 'G':{'A':0, 'C':0, 'T':0},\
             'C':{'A':0, 'G':0, 'T':0}, 'T':{'A':0, 'C':0, 'G':0}}
         for tag in genomediffs:
-            if gd.mut_type=='SNP':
-                old_base = mutation['old_base']
-                new_base = mutation['new_base']
+            if gd.mut_type=='SNP' and gd.snp_type in snp_types:
+                old_base = gd.old_base
+                new_base = gd.new_base
+                line = gd.line
                 snpmatrix[old_base][new_base] = snpmatrix[old_base].get(new_base,0) + 1
-        matrixdict[diff_name] = snpmatrix
-    for filename in matrixdict:
+        matrixdict[line] = snpmatrix
+    for lineage in matrixdict:
         print 'file:', filename
-        print 'to/from:', '\n', str_keyvalue(matrixdict[filename]), '\n'
+        print 'to/from:', '\n', str_keyvalue(matrixdict[lineage]), '\n'
     return matrixdict
 
 # NOTE: Updated for refactor
