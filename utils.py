@@ -13,6 +13,34 @@ from Bio import SeqIO
 
 dna = ['A', 'T', 'C', 'G']
 
+def base_to_int(i):
+    if i == 'A':
+        return 0
+    elif i == 'C':
+        return 1
+    elif i == 'G':
+        return 2
+    elif i == 'T':
+        return 3
+
+def int_to_base(i):
+    if i == 0:
+        return 'A'
+    elif i == 1:
+        return 'C'
+    elif i == 2:
+        return 'G'
+    elif i == 3:
+        return 'T'
+
+def seq_to_int(seq):
+    converted_to_int=[base_to_int(b) for b in seq]
+    return converted_to_int
+
+def int_to_seq(seq):
+    converted_to_seq=[int_to_base(b) for b in seq]
+    return converted_to_seq
+
 def complementary_base(base):
     if base == 'A':
         return 'T'
