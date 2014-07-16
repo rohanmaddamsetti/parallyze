@@ -119,6 +119,7 @@ def proc4(conf):
         parse_genomediff(gd_file, record, genomediffs)
 
     dNdS_counts = calculate_dNdS(genomediffs)
+    #print dNdS_counts
 
 # TODO: Update for refactor
 def proc5(conf):
@@ -202,7 +203,7 @@ def main():
 
     if args.nonsynonymous:
         conf.NONSYNONYMOUS = True
-   if args.synonymous:
+    if args.synonymous:
         conf.SYNONYMOUS = True
     if args.noncoding:
         conf.NONCODING = True
