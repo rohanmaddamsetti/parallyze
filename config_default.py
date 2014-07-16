@@ -1,6 +1,6 @@
 #Configuration file default and test
 
-PROCEDURE = '1'
+PROCEDURE = '5'
 
 REF_GENOME = '''
 REL606.2.gbk
