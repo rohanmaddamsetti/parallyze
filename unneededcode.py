@@ -1,33 +1,3 @@
-def base_to_int(i):
-    if i == 'A':
-        return 0
-    elif i == 'G':
-        return 1
-    elif i == 'C':
-        return 2
-    elif i == 'T':
-        return 3
-
-def int_to_base(i):
-    if i == 0:
-        return 'A'
-    elif i == 1:
-        return 'G'
-    elif i == 2:
-        return 'C'
-    elif i == 3:
-        return 'T'
-
-def seq_to_int(seq):
-    converted_to_int=[base_to_int(b) for b in seq]
-    return converted_to_int
-
-def int_to_seq(seq):
-    converted_to_seq=[int_to_base(b) for b in seq]
-    return converted_to_seq
-
-###################
-
 def get_genecoordinates(record):
     #input: record file from reference (i.e., ref as record file)
     #get all IDed genes and their beginning and end position;

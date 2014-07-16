@@ -38,6 +38,10 @@ def snpcount(genomediffs, snp_types):
     returns dictionary of gdfiles, each containing a matrix
     (i.e., dict of dicts) of SNP mutations - to and from base'''
 
+    matrix = np.ndarray(shape=(4,4), dtype = int, order='T', sum([x,int,out]))
+    #use utils.seq_to_int(base) to index into matrix (0, 4)
+
+'''
     matrixdict = {}
     for key, gd in genomediffs.iteritems(): 
         snpmatrix={'A':{'G':0, 'C':0, 'T':0}, 'G':{'A':0, 'C':0, 'T':0},\
@@ -53,6 +57,7 @@ def snpcount(genomediffs, snp_types):
         print 'file:', filename
         print 'to/from:', '\n', str_keyvalue(matrixdict[lineage]), '\n'
     return matrixdict
+'''
 
 # NOTE: Updated for refactor
 def mutated_lines_per_gene(genomediffs, snp_types):
