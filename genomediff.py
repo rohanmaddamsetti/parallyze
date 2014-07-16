@@ -68,10 +68,7 @@ def parse_genomediff(gd_file, gb_record, genomediffs=None):
 
             mut_type = line[0]
             mut_id = line[1]
-            #print line[2]
-            #print line[2].split(',')
-            tmp = line[2].split(',')
-            parent_ids = (tmp[0], tmp[1])
+            parent_ids = line[2].split(',')
             seq_id = line[3]
             position = int(line[4])-1
 

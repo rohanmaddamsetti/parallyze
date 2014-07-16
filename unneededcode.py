@@ -5,7 +5,7 @@ def base_to_int(i):
         return 1
     elif i == 'C':
         return 2
-    else:
+    elif i == 'T':
         return 3
 
 def int_to_base(i):
@@ -15,7 +15,7 @@ def int_to_base(i):
         return 'G'
     elif i == 2:
         return 'C'
-    else:
+    elif i == 3:
         return 'T'
 
 def seq_to_int(seq):
