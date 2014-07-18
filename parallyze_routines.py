@@ -32,32 +32,28 @@ def calculate_dNdS(genomediffs):
 
     return counts
 
-# TODO: Update for refactor
-def snpcount(genomediffs, snp_types):
+# NOTE: Updated for refactor
+def snpcount(genomediffs, lines, snp_types):
     '''input: 'mutations' i.e., parsed gd files
     returns dictionary of gdfiles, each containing a matrix
-    (i.e., dict of dicts) of SNP mutations - to and from base'''
+    of SNP mutations - to and from base'''
 
-    matrix = np.ndarray(shape=(4,4), dtype = int, order='T', sum([x,int,out]))
-    #use utils.seq_to_int(base) to index into matrix (0, 4)
+    file_matrices = {}
+    for line in lines:
+        file_matrices[line] = np.zeros((4,4), dtype = int)
 
-'''
-    matrixdict = {}
-    for key, gd in genomediffs.iteritems(): 
-        snpmatrix={'A':{'G':0, 'C':0, 'T':0}, 'G':{'A':0, 'C':0, 'T':0},\
-            'C':{'A':0, 'G':0, 'T':0}, 'T':{'A':0, 'C':0, 'G':0}}
-        for tag in genomediffs:
-            if gd.mut_type=='SNP' and gd.snp_type in snp_types:
-                old_base = gd.old_base
-                new_base = gd.new_base
-                line = gd.line
-                snpmatrix[old_base][new_base] = snpmatrix[old_base].get(new_base,0) + 1
-        matrixdict[line] = snpmatrix
-    for lineage in matrixdict:
-        print 'file:', filename
-        print 'to/from:', '\n', str_keyvalue(matrixdict[lineage]), '\n'
-    return matrixdict
-'''
+    for key, gd in genomediffs.iteritems():
+        if gd.mut_type=='SNP' and gd.snp_type in snp_types:
+            old_base = utils.seq_to_int(gd.old_base)
+            new_base = utils.seq_to_int(gd.new_base)
+            line = gd.line
+            file_matrices[line][old_base, new_base] += 1
+
+    for line, mat in file_matrices.iteritems():
+        print 'file:', line
+        print 'from (row) / to (column) :', '\n', mat, '\n'
+
+    return file_matrices
 
 # NOTE: Updated for refactor
 def mutated_lines_per_gene(genomediffs, snp_types):

@@ -132,7 +132,7 @@ def proc5(conf):
     for gd_file in conf.GENOMEDIFF_FILES:
         parse_genomediff(gd_file, record, genomediffs = genomediffs)
 
-    snpcounting = snpcount(genomediffs, snp_types)
+    snpcounting = snpcount(genomediffs, conf.GENOMEDIFF_FILES, conf.snp_types)
 
     '''
     params, topgenes, reps = gene_rank_and_mutate_parameters()
