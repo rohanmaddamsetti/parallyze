@@ -79,6 +79,7 @@ def mutated_lines_per_gene(genomediffs, snp_types):
     return sorted_tag_lines
 
 # TODO: Update for refactor? low priority
+# TODO: if position is intergenic (or etc.), choose new position
 def snpmutate(matrix, num_replicates, refseq_arr): 
     '''input: matrixdict and refseq as numpy array from snpcount and parse_ref, respectively
     called by get_mut_sites
