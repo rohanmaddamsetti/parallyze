@@ -80,7 +80,7 @@ def mutated_lines_per_gene(genomediffs, snp_types):
 
 # TODO: Update for refactor? low priority
 # TODO: if position is intergenic (or etc.), choose new position
-def snpmutate(matrix, num_replicates, refseq_arr): 
+def snpmutate(mat, num_replicates, refseq_arr): 
     '''input: matrixdict and refseq as numpy array from snpcount and parse_ref, respectively
     called by get_mut_sites
 
@@ -91,6 +91,12 @@ def snpmutate(matrix, num_replicates, refseq_arr):
     }
     Where each array has num_replicates rows and columns corresponding to the number of mutations
     for the original base
+    '''
+
+    mut_sites = {}
+    for origbase in mat:
+        num_muts = #numpy.zeros sum across matrix row
+
     '''
     mut_sites = {}
     #print matrix
@@ -111,6 +117,7 @@ def snpmutate(matrix, num_replicates, refseq_arr):
         mut_sites[origbase] = sites
     #print mut_sites
     return mut_sites
+    '''
 
 # TODO: Refactor? low priority
 def get_mut_sites(matrices, refseq, num_replicates):
