@@ -7,10 +7,10 @@ Things to do:
 3. change locations of mutations to be dropped to align with included/specified gd mutations (ie, synon, non-synon, non-coding, etc)
 (done) 4. change from #muts/gene to #lines/gene
 5. analytic solution for SNPs
-6. dN/dS ratio
+6. (done?) dN/dS ratio
 7. get genes that positions fall into. have # of times hit, not just hit/nothit (best method for this? locus tag? gene? (do intergenic now - intragenic later)
 8. sum, across all lines, # of mutations per gene, for experimental data (done) and simulated data - divide by reps for avg.? 
-9. print bar graphs?
+9. print bar graphs? 
 10. condense/reformat/renumber/rearrage procedures
 '''     
 
