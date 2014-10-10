@@ -153,3 +153,4 @@ def parse_genomediff(gd_file, gb_record, genomediffs=None):
             genomediffs[key] = gd
 
     return genomediffs
+
