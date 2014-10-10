@@ -119,7 +119,7 @@ def snpmutate(mat, num_replicates, refseq_arr):
     return mut_sites
     '''
 
-# TODO: Refactor? low priority
+# TODO: Refactor? low priority. do for comparison btwn analytic and simulation
 def get_mut_sites(matrices, refseq, num_replicates):
     mut_sites = {}
     refseq_arr = np.array([c for c in refseq]) 
