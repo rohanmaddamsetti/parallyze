@@ -92,10 +92,10 @@ def snpmutate(mat, num_replicates, refseq_arr):
     Where each array has num_replicates rows and columns corresponding to the number of mutations
     for the original base
     '''
-
-    mut_sites = {}
-    for origbase in mat:
-        num_muts = #numpy.zeros sum across matrix row
+#below was recently commented out for purposes of functionality
+#    mut_sites = {}
+#    for origbase in mat:
+#        num_muts = #numpy.zeros sum across matrix row
 
     '''
     mut_sites = {}
