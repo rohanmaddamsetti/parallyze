@@ -3,7 +3,7 @@ genomediff.py
 
 Part of parallyze
 by Elizabeth Baird
-+ Camille Scott
+
 
 Contains class and parsing function(s) for genomediff files.
 
@@ -153,4 +153,3 @@ def parse_genomediff(gd_file, gb_record, genomediffs=None):
             genomediffs[key] = gd
 
     return genomediffs
-
