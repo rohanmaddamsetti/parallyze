@@ -3,7 +3,7 @@ utils.py
 
 Part of parallyze
 by Elizabeth Baird
-+ Camille Scott
+
 
 Contains parallyze general utility functions.
 
