@@ -5,7 +5,7 @@ import utils
 
 def calculate_dNdS(genomediffs):
     '''input: the output from parsed gd files
-    goal: count the SNP mutation types for dN/dS, intergenic, etc
+    goal: count the SNP mutation types for dN/dS, intergenic, etc.
     output: dict of dict of a count'''
 
     counts = {}
