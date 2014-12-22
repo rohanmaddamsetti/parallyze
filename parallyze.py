@@ -37,7 +37,7 @@ import operator
 # TODO: Update for refactor
 def write_gene_mut_counts(genecoords, mut_sites):
     header = 'gene, ' + ', '.join([filename for filename in mut_sites])
-    with open('sim_mut_counts.csv', 'wb') as outfp:
+    with open('simulated_mutations_counts.csv', 'wb') as outfp:
         outfp.write(header + '\n')
         for locus_tag in genecoords:
             cds = genecoords[locus_tag]
@@ -51,7 +51,7 @@ def write_gene_mut_counts(genecoords, mut_sites):
 # TODO: Update for refactor
 def write_gd_gene_mut_counts(genecoords, gd_genes):
     header = 'gene, count'
-    with open('exp_mut_counts.csv', 'wb') as outfp:
+    with open('experimental_mutations_counts.csv', 'wb') as outfp:
         outfp.write(header + '\n')
         for _, _, gene, tag in genecoords:
             muts = [tag]

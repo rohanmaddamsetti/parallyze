@@ -1,7 +1,7 @@
 '''
 gene.py
 
-Defines a Gene object, given a feature object from biopython's
+Defines a Gene object, given a feature object from Biopython's
 SeqIO module.
 '''
 class Gene(object):
@@ -42,8 +42,6 @@ class Gene(object):
         return '{} ({}): ({},{}) A={} G={} C={} T={}'.format(
             self.name, self.locus_tag, self.start, self.end, 
             self.A, self.G, self.C, self.T)
-
-
 
 def get_genecoordinates(record):
     geneinfo = {}

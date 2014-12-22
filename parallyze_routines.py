@@ -5,7 +5,7 @@ import utils
 
 def calculate_dNdS(genomediffs):
     '''input: the output from parsed gd files
-    goal: count the SNP mutation types for dN/dS, intergenic, etc
+    goal: count the SNP mutation types for dN/dS, intergenic, etc.
     output: dict of dict of a count'''
 
     counts = {}
@@ -92,10 +92,10 @@ def snpmutate(mat, num_replicates, refseq_arr):
     Where each array has num_replicates rows and columns corresponding to the number of mutations
     for the original base
     '''
-
-    mut_sites = {}
-    for origbase in mat:
-        num_muts = #numpy.zeros sum across matrix row
+#below was recently commented out for purposes of functionality
+#    mut_sites = {}
+#    for origbase in mat:
+#        num_muts = #numpy.zeros sum across matrix row
 
     '''
     mut_sites = {}

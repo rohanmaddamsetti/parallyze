@@ -12,6 +12,7 @@ by Camille Scott
 Defines a simple config file parsing class.
 
 '''
+#note for CSE801: I don't fully understand how this all works
 
 def coroutine(func):
     def start(*args,**kwargs):
