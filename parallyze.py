@@ -17,22 +17,29 @@ Things to do:
 import argparse
 import os
 import sys
+from pprint import pprint
+import inspect
 
 from config import SimpleConfig
 from genomediff import parse_genomediff, GenomeDiff
 from gene import Gene, get_genecoordinates
-from parallyze_routines import *
 import utils
+from parallyze_routines import *
 
 from Bio import SeqIO
 from Bio import SeqFeature
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import IUPAC
+from Bio.Align import MultipleSeqAlignment
+from Bio.Phylo.Applications import RaxmlCommandline
+from Bio import AlignIO
 
 from numpy import random
 import numpy as np
 import operator
+import itertools
+from copy import deepcopy
 
 # TODO: Update for refactor
 def write_gene_mut_counts(genecoords, mut_sites):
@@ -75,9 +82,8 @@ def write_proc6_locus_mut_counts(linesmut):
 # TODO: Update for refactor
 def proc1(conf):
     '''simulated solution'''
-
-    record = utils.parts_genbank(conf.REF_GENOME)
-    utils.print_genbank_summary(record)
+    ref_record = utils.parts_genbank(conf.REF_GENOME)
+    #utils.print_genbank_summary(ref_record)
 
     genomediffs = {}
     for gd_file in conf.GENOMEDIFF_FILES:
@@ -99,7 +105,37 @@ def proc1(conf):
     write_gd_gene_mut_counts(genecoords, genefreqs)
     '''
 
-'''old proc3 assumptions: Synonymous mutations are neutral, Mutations are independent of one another, No defects to DNA repair, Mutation rate is constant across the genome, There is only one chromosome'''
+'''Procedure 3: Genomes from multiple isolates from the same experimental evolution population.
+
+1) A phylogeny must be provided as input.
+2) Infer genotypes of all internal nodes by "using parsimonious assumptions" -- or better.
+3) Count the number x of inferred mutations, and generate a 4x4 matrix of mutation probabilities.
+
+        for 1 to N replicates:
+        drop x mutations onto reference genome, and count number of independent mutations per gene.
+        
+        average the results to calculate the null distribution.
+'''
+
+def proc3(conf):
+
+    print "IN PROC 3"
+    aln = SNPsToAlignment(conf)
+    ## 2) Now estimate a phylogeny from the alignment.
+    phylogeny = AlignmentToPhylogeny(aln)
+
+    ## PROBLEM: A true star phylogeny for replicate lineages is NOT recapitulated.
+    ## This means that identical parallel mutations at the nucleotide level will
+    ## be missed. Phylogeny software that assumes all samples come from the same
+    ## time point will allow make errors through assumption.
+    ## So, using outside packages is not appropriate for analyzing experimental
+    ## evolution phylogenies at this point in my thinking.
+
+    ## 3) from the Phylogeny, make a matrix of mutations.
+
+    ## 4) Using the matrix of mutations, 
+    ##calculate statistics of parallel evolution.
+
 
 # NOTE: Updated to standards for refactor
 def proc4(conf):
@@ -177,12 +213,93 @@ config_keys = { 'REF_GENOME': str,
                 'REPLICATES': int,
                 'GENES_TO_DISPLAY': int }
 
+def window_iterator(seq, n=2):
+    "Returns a sliding window (of width n) over data from the iterable"
+    "   s -> (s0,s1,...s[n-1]), (s1,s2,...,sn), ...                   "
+    it = iter(seq)
+    result = tuple(itertools.islice(it, n))
+    if len(result) == n:
+        yield result    
+    for elem in it:
+        result = result[1:] + (elem,)
+        yield result
+
+def makeWindow(i, mutlist, distlist, window_len=200):
+    assert(len(mutlist) == len(distlist))
+    x = i
+    total_dist = 0
+    window = []
+    while total_dist <= window_len:
+        window.append(mutlist[x])
+        total_dist = total_dist + distlist[x]
+        if x == len(mutlist)-1: # chromosome is circular.
+            x = 0
+        else:
+            x = x + 1
+    return window
+
+def proc7(conf, window_len=200):
+    
+    ref_record = utils.parse_genbank(conf.REF_GENOME)
+    mut_list = []
+    conf.GENOMEDIFF_FILES.sort() # sort to ensure order is always the same
+    for gd_file in conf.GENOMEDIFF_FILES:
+        gd_dict = parse_genomediff(gd_file, ref_record)
+        mut_list = mut_list + gd_dict.values()
+    mut_list.sort(key=lambda x: x.position)
+    dist_list = [y.position-x.position for x,y in window_iterator(mut_list)]
+    ## add the last elt of dist_list (because chromosome is circular)
+    dist_list.append(mut_list[0].position + len(ref_record.seq) - mut_list[-1].position)
+    assert(sum(dist_list) == len(ref_record.seq))
+    windows = []
+    for i,mut in enumerate(mut_list):
+        windows.append(makeWindow(i, mut_list, dist_list,window_len))
+    ## filter out structural mutations.
+    windows2 = []
+    for w in windows:
+        kinds = set([x.mut_type for x in w])
+        if kinds == set(['SNP']):
+            windows2.append(w)
+    windows2.sort(key=lambda x: len(x),reverse=True)
+
+    ## pick non-overlapping windows that cover all genomes as markers.
+    unmarked_genomes = {k:1 for k in conf.GENOMEDIFF_FILES} # 1 if unmarked.
+    markers = []
+    while sum(unmarked_genomes.values()):
+        best_window = []
+        most_new_marks = 0
+        for w in windows2:
+            ## make sure mutations UNIQUELY IDENTIFY genome.
+            ## CANNOT be the same new_base and position.
+            unique_positions = [mut.position for mut in w]
+            id_check = [(mut.position, mut.new_base) for mut in w]
+            unique_muts = [mut for mut in w if id_check.count((mut.position, mut.new_base)) == 1]
+            marks = [mut.fname for mut in unique_muts]
+            new_marks = len([x for x in marks if unmarked_genomes[x] == 1])
+            if new_marks > most_new_marks:
+                most_new_marks = new_marks
+                best_window = w
+        markers.append(best_window)
+        for mut in best_window:
+            unmarked_genomes[mut.fname] = 0 # the genome is not unmarked anymore!
+    ## print the ranges that are most informative.
+    for i,m in enumerate(markers):
+        print "MARKER", i+1, ":" 
+        for mut in m:
+            print mut.fname, mut.position, mut.old_base, mut.new_base, mut.gene_name
+        
+'''Procedure 7: find most informative regions of the genome.
+take the union of all genome diffs; need position and originating line info.
+find windows that are most dense with SNPs for freq-seq.
+windows must: contain haplotypes that distinguish all (or many) LTEE pops.
+'''
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', dest='config', 
         help="parallyze config file", default='parallyze.conf')
     parser.add_argument('--procedure', dest='procedure', type=int, 
-        default=6, choices=range(1,7))
+                        default=6, choices=range(1,8))
     parser.add_argument('--nonsynonymous', action='store_true')
     parser.add_argument('--synonymous', action='store_true')
     parser.add_argument('--noncoding', action='store_true')
@@ -245,6 +362,8 @@ def main():
         proc5(conf)
     elif args.procedure == 6:
         proc6(conf)
+    elif args.procedure == 7:
+        proc7(conf)
 
 main()
 

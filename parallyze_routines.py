@@ -1,5 +1,16 @@
 import numpy as np
 import operator
+import os
+
+from genomediff import parse_genomediff, GenomeDiff
+from Bio import SeqIO
+from Bio import SeqFeature
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+from Bio.Align import MultipleSeqAlignment
+from Bio.Phylo.Applications import RaxmlCommandline
+from Bio import AlignIO
+
 
 import utils
 
@@ -135,5 +146,62 @@ def get_mut_sites(matrices, refseq, num_replicates):
                 }
     '''
     return mut_sites
+
+def SNPsToAlignment(conf):
+    ''' rows are lexicographically sorted conf.GENOMEDIFF_FILES, and
+    the last row is the reference sequence. columns are all positions 
+    that evolved in the set of genomes.
+    '''
+    
+    ref_record = utils.parse_genbank(conf.REF_GENOME)
+    #utils.print_genbank_summary(ref_record)
+
+    snps = []
+    ## each elt in snps is a tuple: (position, old_base, new_base, locus_tag, label)
+    conf.GENOMEDIFF_FILES.sort() ## So I can assume the diffs are sorted.
+    for gd_file in conf.GENOMEDIFF_FILES:
+        gd_dict = parse_genomediff(gd_file, ref_record)
+        for k, v in gd_dict.iteritems():
+            if v.mut_type != 'SNP':  ## only consider SNPs
+                continue
+            old_base = ref_record[v.position]
+            snps.append((v.position, old_base, v.new_base, v.locus_tag[0], gd_file))
+    snps.sort(key=lambda elt: elt[0]) #sort by position.
+    cols = [x for x in set([elt[0] for elt in snps])]
+    cols.sort()
+    ## The LAST row of the alignment is the reference.
+    alignment = [['']*len(cols) for x in range(len(conf.GENOMEDIFF_FILES)+1)]
+    ## make an index of positions to columns.
+    for elt in snps:
+        i = conf.GENOMEDIFF_FILES.index(elt[4])
+        j = cols.index(elt[0])
+        alignment[-1][j] = elt[1] ## the reference sequence.
+        alignment[i][j] = elt[2]
+    # now fill in the empty entries in the matrix with the reference seq value.
+    ref = alignment[-1]
+    print ref
+    for i in range(len(alignment)):
+        for j in range(len(cols)):
+            if alignment[i][j] == '':
+                alignment[i][j] = ref[j]
+
+    str_alignment = [''.join(x) for x in alignment]
+    aln_ids = [os.path.splitext(gd)[0] for gd in conf.GENOMEDIFF_FILES]
+    aln_ids = aln_ids + [ref_record.id] # add the reference. 
+    site_recs = [SeqRecord(Seq(x), id=y) for x,y in zip(str_alignment, aln_ids)] 
+    ## turn into a Biopython Alignment object.
+    msa = MultipleSeqAlignment(site_recs)
+    return msa
+
+def AlignmentToPhylogeny(aln):
+
+    ## write alignment to a temporary file.
+    out_handle = open("temp/aln.phy", "w")
+    AlignIO.write(aln, out_handle, "phylip")
+    out_handle.close()
+    ## raxml needs phylip formatted data.       
+    raxml_cline = RaxmlCommandline(sequences="temp/aln.phy", threads=2, model="GTRGAMMA", name="test")
+    raxml_cline()
+    return None
 
 
