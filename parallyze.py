@@ -34,6 +34,7 @@ from Bio.Alphabet import IUPAC
 from Bio.Align import MultipleSeqAlignment
 from Bio.Phylo.Applications import RaxmlCommandline
 from Bio import AlignIO
+from Bio import Phylo
 
 from numpy import random
 import numpy as np
@@ -82,13 +83,11 @@ def write_proc6_locus_mut_counts(linesmut):
 # TODO: Update for refactor
 def proc1(conf):
     '''simulated solution'''
-    ref_record = utils.parts_genbank(conf.REF_GENOME)
-    #utils.print_genbank_summary(ref_record)
 
-    genomediffs = {}
-    for gd_file in conf.GENOMEDIFF_FILES:
-        parse_genomediff(gd_file, record, genomediffs)
-
+    ## Rohan's simple solution:
+    snp_total = BasicSNPCount(conf) ## just return the number of dN in genes.
+    ## calculate statistics of parallel evolution.
+    Statisticulate(conf, snp_total, star=True,reps=100000)
     
     ''' 
     record = make_record(conf['ref'])
@@ -105,7 +104,7 @@ def proc1(conf):
     write_gd_gene_mut_counts(genecoords, genefreqs)
     '''
 
-'''Procedure 3: Genomes from multiple isolates from the same experimental evolution population.
+'''Old Procedure 3: Genomes from multiple isolates from the same experimental evolution population.
 
 1) A phylogeny must be provided as input.
 2) Infer genotypes of all internal nodes by "using parsimonious assumptions" -- or better.
@@ -115,14 +114,6 @@ def proc1(conf):
         drop x mutations onto reference genome, and count number of independent mutations per gene.
         
         average the results to calculate the null distribution.
-'''
-
-def proc3(conf):
-
-    print "IN PROC 3"
-    aln = SNPsToAlignment(conf)
-    ## 2) Now estimate a phylogeny from the alignment.
-    phylogeny = AlignmentToPhylogeny(aln)
 
     ## PROBLEM: A true star phylogeny for replicate lineages is NOT recapitulated.
     ## This means that identical parallel mutations at the nucleotide level will
@@ -131,11 +122,27 @@ def proc3(conf):
     ## So, using outside packages is not appropriate for analyzing experimental
     ## evolution phylogenies at this point in my thinking.
 
-    ## 3) from the Phylogeny, make a matrix of mutations.
+    New Procedure 3: replicate the analysis in Lieberman 2011.
 
-    ## 4) Using the matrix of mutations, 
-    ##calculate statistics of parallel evolution.
+'''
 
+def proc3(conf):
+
+    print "IN PROC 3"
+    #aln = SNPsToAlignment(conf)
+    #phy = AlignmentToPhylogeny(aln) # phylogeny is a tree object.
+
+    ##This line is just for testing purposes.
+    phy = Phylo.read("temp/RAxML_bestTree.test", "newick")
+    ## 3) from the Phylogeny,
+    gtree = GenotypeTree(phy,conf)
+    ## count independent mutations in gtree.
+    #snp_total = BasicSNPCount(conf) ## just return the number of dN in genes.
+    ## calculate statistics of parallel evolution.
+    ## This function need to be rewritten to use GenotypeTree.
+    #Statisticulate(conf, snp_total,star=False,reps=1000)
+
+    #cleanup() # delete temp folder, doesn't work right now.
 
 # NOTE: Updated to standards for refactor
 def proc4(conf):
@@ -239,7 +246,11 @@ def makeWindow(i, mutlist, distlist, window_len=200):
     return window
 
 def proc7(conf, window_len=200):
-    
+    '''Procedure 7: find most informative regions of the genome.
+    take the union of all genome diffs; need position and originating line info.
+    find windows that are most dense with SNPs for freq-seq.
+    windows must: contain haplotypes that distinguish all (or many) LTEE pops.
+    '''    
     ref_record = utils.parse_genbank(conf.REF_GENOME)
     mut_list = []
     conf.GENOMEDIFF_FILES.sort() # sort to ensure order is always the same
@@ -287,12 +298,6 @@ def proc7(conf, window_len=200):
         print "MARKER", i+1, ":" 
         for mut in m:
             print mut.fname, mut.position, mut.old_base, mut.new_base, mut.gene_name
-        
-'''Procedure 7: find most informative regions of the genome.
-take the union of all genome diffs; need position and originating line info.
-find windows that are most dense with SNPs for freq-seq.
-windows must: contain haplotypes that distinguish all (or many) LTEE pops.
-'''
 
 def main():
     parser = argparse.ArgumentParser()

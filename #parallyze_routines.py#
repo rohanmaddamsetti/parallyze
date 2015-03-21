@@ -213,8 +213,11 @@ def GenotypeTree(phy, conf):
     ''' takes a Biopython Tree object. returns a tree of genotypes, mutations
     are approximately represented uniquely.'''
     print phy
+    init_node = {'parent':None, 'children':[], genotype:None}
+    genotype_tree = 
     for node in phy.find_clades():
         print node
+        if node!
     
     return None
 
