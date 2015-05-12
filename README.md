@@ -45,10 +45,8 @@ Genomes from evolution experiment. Assume star phylogeny.
         Shuffle all mutations across n genomes.
     Calculate how often a certain dispersion pattern occurs 
     (e.g., 12 mutations in nadR; all mutations occur in separate genomes).    
-        
-###Procedure 3: Phylogeny construction. What is the phylogeny of my sequenced genomes?
 
-Genomes from multiple isolates from the same experimental evolution population.
+###Procedure 3: Genomes from multiple isolates from the same experimental evolution population.
 
 1) Infer phylogeny
 2) Infer genotypes of all internal nodes by "using parsimonious assumptions" -- or better.
@@ -68,6 +66,18 @@ This should be straightforward from the genome diff format.
 ###Procedure 5: Gene mutation frequency. For each gene, what is the frequency of mutation for all of my pooled experimental lineages compared to an analytical null distribution? 
 
 ###Procedure 6: Number of lines mutating in each particular gene. /done - integrated into other procedures
+
+### Procedure 7: find most informative regions of the genome.
+take the union of all genome diffs; need position and originating line info.
+find windows that are most dense with SNPs for freq-seq.
+windows must: 1) be different lengths (BUT CHECK FOR AMPLIFICATION BIAS EFFECTS)
+              2) contain haplotypes that distinguish all (or many) LTEE pops.
+	         Ask Mike which pops were included in the Demolition Derby.
+Naive solution:
+      pick a window size. slide along the genome, find a window that maximizes
+      the number of LTEE lines that can be distinguished
+      Repeat for a smaller window, searching for a region informative for the
+      remaining LTEE lines without a distinguishing haplotype, until done.
 
 ###Datasets for Testing
 

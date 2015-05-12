@@ -22,12 +22,13 @@ class GenomeDiff(object):
     are added after instantiation in the parsing function.
     '''
 
-    def __init__(self, mut_id, mut_type, parent_ids, seq_id, position):
+    def __init__(self, mut_id, mut_type, parent_ids, seq_id, position, fname):
         self.mut_type = mut_type
         self.mut_id = mut_id
         self.parent_ids = parent_ids
         self.seq_id = seq_id
         self.position = position
+        self.fname = fname
 
     def __repr__(self):
         return '{0}: {1} {2}'.format(hash(self), self.mut_type, self.seq_id)
@@ -70,9 +71,11 @@ def parse_genomediff(gd_file, gb_record, genomediffs=None):
             mut_id = line[1]
             parent_ids = line[2].split(',')
             seq_id = line[3]
-            position = int(line[4])-1
+            position = int(line[4])-1   ### NOTE: DOCUMENT THE ZERO-INDEXING OF POSITIONS IN GENOME!
+            # which file (genome) did I come from?
+            fname = gd_file
 
-            gd = GenomeDiff(mut_id, mut_type, parent_ids, seq_id, position)
+            gd = GenomeDiff(mut_id, mut_type, parent_ids, seq_id, position, fname)
 
             if mut_type == 'SNP':
 
@@ -101,7 +104,7 @@ def parse_genomediff(gd_file, gb_record, genomediffs=None):
                     assert hasattr(gd, 'codon_ref_seq')
                     gd.codon_position = int(gd.codon_position) - 1
                     gd.old_base = gd.codon_ref_seq[gd.codon_position]
-                
+
                 elif gd.snp_type in ['intergenic', 'pseudogene', 'noncoding']:
                     
                     gd.old_base = gb_record.seq[gd.position]
@@ -145,11 +148,12 @@ def parse_genomediff(gd_file, gb_record, genomediffs=None):
             elif mut_type == 'INV':
                 gd.size = int(line[5])
             
-            # Get a unique key for addressing this mutation
+            # Get a unique key for addressing this mutation  ## NOTE: I don't like this hashing but leave for now...what is a better key?
             key = hash(gd)
             # Store the line for this mutation
             gd.line = os.path.basename(gd_file)
 
+            
             genomediffs[key] = gd
 
     return genomediffs
