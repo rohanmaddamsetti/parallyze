@@ -161,8 +161,9 @@ def proc4(conf):
     for gd_file in conf.GENOMEDIFF_FILES:
         parse_genomediff(gd_file, record, genomediffs)
 
-    dNdS_counts = calculate_dNdS(genomediffs)
-    #print dNdS_counts
+    dNdS_counts,dNtotal,dStotal = calculate_dNdS(genomediffs)
+    print dNdS_counts
+    print "dN:",dNtotal, "  dS:", dStotal, "  dN/dS:", float(dNtotal)/float(dStotal)
 
 # TODO: Update for refactor
 def proc5(conf):
@@ -207,7 +208,8 @@ def proc6(conf):
 
     print '\n'.join([str(row) for row in counts])
 
-    #genecoords, total_bases = get_genecoordinates(record)   #why is this commented out? cuz I'm not here yet?
+    #genecoords, total_bases = get_genecoordinates(record)   
+    #why is this commented out? cuz I'm not here yet?
     #write_proc6_locus_mut_counts(genefreqs)
 
 config_keys = { 'REF_GENOME': str,

@@ -24,13 +24,19 @@ def calculate_dNdS(genomediffs):
     output: dict of dict of a count'''
 
     counts = {}
-
+    dNtotal = 0
+    dStotal = 0
+    dN1 = 0
+    dS1 = 0
+    dN2 = 0
+    dS2 = 0
+    dN3plus = 0
+    dS3plus = 0
     for mut_id, gd in genomediffs.iteritems():
         if gd.mut_type == 'SNP' and \
-            gd.snp_type in ['synonymous', 'nonsynonymous']:
-            
-            # These all only have one locus_tag, and we can't
-            # use a list as a key, so just get the value
+            gd.snp_type in ['synonymous', 'nonsynonymous']:            
+               # These all only have one locus_tag, and we can't
+               # use a list as a key, so just get the value
             locus_tag = gd.locus_tag[0]
 
             if locus_tag in counts:
@@ -40,12 +46,16 @@ def calculate_dNdS(genomediffs):
 
             if gd.snp_type == 'nonsynonymous':
                 dN += 1
+                dNtotal +=1
             else:
                 dS += 1
+                dStotal+=1
+
+        
             
             counts[locus_tag] = (dN, dS)
 
-    return counts
+    return counts, dNtotal, dStotal
 
 # NOTE: Updated for refactor
 def snpcount(genomediffs, lines, snp_types):
