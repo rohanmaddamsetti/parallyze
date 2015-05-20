@@ -195,7 +195,7 @@ def proc5(conf):
     '''
 
 # NOTE: Updated for refactor
-def proc6(conf):
+def proc6(conf, out_fn=None):
     '''number of lines mutating in this particular gene'''
     record = utils.parse_genbank(conf.REF_GENOME)
     utils.print_genbank_summary(record)
@@ -206,7 +206,15 @@ def proc6(conf):
    
     counts = mutated_lines_per_gene(genomediffs, conf.snp_types)
 
-    print '\n'.join([str(row) for row in counts])
+    if out_fn is None:
+        out_fn = 'default.urstupidgivemeaname.tsv'
+    with open(out_fn, 'wb') as fp:
+        for tag, data in counts:
+            line = str(tag)
+            line += '\t' + str(tuple(data['genes']))
+            line += '\t' + str(len(data['lines']))
+            line += '\t' + str(tuple(data['lines']))
+            fp.write(line + '\n')
 
     #genecoords, total_bases = get_genecoordinates(record)   
     #why is this commented out? cuz I'm not here yet?
