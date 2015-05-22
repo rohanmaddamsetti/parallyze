@@ -19,6 +19,12 @@ import os
 import sys
 from pprint import pprint
 import inspect
+import time
+from numpy import random
+import numpy as np
+import operator
+import itertools
+from copy import deepcopy
 
 from config import SimpleConfig
 from genomediff import parse_genomediff, GenomeDiff
@@ -36,58 +42,15 @@ from Bio.Phylo.Applications import RaxmlCommandline
 from Bio import AlignIO
 from Bio import Phylo
 
-from numpy import random
-import numpy as np
-import operator
-import itertools
-from copy import deepcopy
-
-# TODO: Update for refactor
-def write_gene_mut_counts(genecoords, mut_sites):
-    header = 'gene, ' + ', '.join([filename for filename in mut_sites])
-    with open('simulated_mutations_counts.csv', 'wb') as outfp:
-        outfp.write(header + '\n')
-        for locus_tag in genecoords:
-            cds = genecoords[locus_tag]
-            for filename in mut_sites:
-                line_muts = 0
-                for origbase in mut_sites[filename]:
-                    line_muts += ((mut_sites[filename][origbase] >= start) & (mut_sites[filename][origbase] < end)).sum()
-                row.append(line_muts)
-            outfp.write(', '.join([str(c) for c in row]) + '\n')
-
-# TODO: Update for refactor
-def write_gd_gene_mut_counts(genecoords, gd_genes):
-    header = 'gene, count'
-    with open('experimental_mutations_counts.csv', 'wb') as outfp:
-        outfp.write(header + '\n')
-        for _, _, gene, tag in genecoords:
-            muts = [tag]
-            if tag in gd_genes:
-                muts.append(gd_genes[tag])
-            else:
-                muts.append(0)
-            outfp.write(', '.join([str(c) for c in muts]) + '\n')
-
-# TODO: Update for refactor
-def write_proc6_locus_mut_counts(linesmut):
-    header = 'locus_tag; genomes'
-    with open('locus_mut_counts.csv', 'wb') as outfp:
-        outfp.write(header + '\n')
-        for row in linesmut:
-            locus = row[0]
-            genomes = row[1]
-            outfp.write('{}; '.format(locus))
-            outfp.write(', '.join([str(g) for g in genomes]) + '\n')
-
 # TODO: Update for refactor
 def proc1(conf):
+    #TODO: 
     '''simulated solution'''
 
     ## Rohan's simple solution:
     snp_total = BasicSNPCount(conf) ## just return the number of dN in genes.
     ## calculate statistics of parallel evolution.
-    Statisticulate(conf, snp_total, star=True,reps=100000)
+    Statisticulate(conf, snp_total, star=True,reps=100)
     
     ''' 
     record = make_record(conf['ref'])
@@ -125,6 +88,16 @@ def proc1(conf):
     New Procedure 3: replicate the analysis in Lieberman 2011.
 
 '''
+
+def proc2(conf):
+    '''EJB code to create histogram comparing actual and
+         simulated genes mutated/lineage'''
+
+    '''number of lines mutating in this particular gene'''
+
+
+    snp_total = BasicSNPCount(conf) ## just return the number of dN in genes.
+    print snp_total
 
 def proc3(conf):
 
@@ -195,7 +168,7 @@ def proc5(conf):
     '''
 
 # NOTE: Updated for refactor
-def proc6(conf):
+def proc6(conf, args, out_fn=None):
     '''number of lines mutating in this particular gene'''
     record = utils.parse_genbank(conf.REF_GENOME)
     utils.print_genbank_summary(record)
@@ -206,46 +179,22 @@ def proc6(conf):
    
     counts = mutated_lines_per_gene(genomediffs, conf.snp_types)
 
-    print '\n'.join([str(row) for row in counts])
+    if out_fn is None:
+        timestr=time.strftime('%Y_%m_%d')
+        out_fn = args.fname+timestr+'.tsv'
+    with open(out_fn, 'wb') as fp:
+        for tag, data in counts:
+            line = str(tag)
+            line += '\t' + str(tuple(data['genes']))
+            line += '\t' + str(len(data['lines']))
+            line += '\t' + str(tuple(data['lines']))
+            fp.write(line + '\n')
+        #TODO: also include freq of mut types per mutating locus tag
+            #e.g., 3 non-synon, 1 synon.
 
     #genecoords, total_bases = get_genecoordinates(record)   
     #why is this commented out? cuz I'm not here yet?
     #write_proc6_locus_mut_counts(genefreqs)
-
-config_keys = { 'REF_GENOME': str,
-                'GENOMEDIFF_FILES': str,
-                'NONSYNONYMOUS': bool,
-                'SYNONYMOUS': bool,
-                'NONCODING': bool,
-                'PSEUDOGENE': bool,
-                'INTERGENIC': bool,
-                'REPLICATES': int,
-                'GENES_TO_DISPLAY': int }
-
-def window_iterator(seq, n=2):
-    "Returns a sliding window (of width n) over data from the iterable"
-    "   s -> (s0,s1,...s[n-1]), (s1,s2,...,sn), ...                   "
-    it = iter(seq)
-    result = tuple(itertools.islice(it, n))
-    if len(result) == n:
-        yield result    
-    for elem in it:
-        result = result[1:] + (elem,)
-        yield result
-
-def makeWindow(i, mutlist, distlist, window_len=200):
-    assert(len(mutlist) == len(distlist))
-    x = i
-    total_dist = 0
-    window = []
-    while total_dist <= window_len:
-        window.append(mutlist[x])
-        total_dist = total_dist + distlist[x]
-        if x == len(mutlist)-1: # chromosome is circular.
-            x = 0
-        else:
-            x = x + 1
-    return window
 
 def proc7(conf, window_len=200):
     '''Procedure 7: find most informative regions of the genome.
@@ -301,6 +250,16 @@ def proc7(conf, window_len=200):
         for mut in m:
             print mut.fname, mut.position, mut.old_base, mut.new_base, mut.gene_name
 
+config_keys = { 'REF_GENOME': str,
+                'GENOMEDIFF_FILES': str,
+                'NONSYNONYMOUS': bool,
+                'SYNONYMOUS': bool,
+                'NONCODING': bool,
+                'PSEUDOGENE': bool,
+                'INTERGENIC': bool,
+                'REPLICATES': int,
+                'GENES_TO_DISPLAY': int }
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', dest='config', 
@@ -314,7 +273,9 @@ def main():
     parser.add_argument('--intergenic', action='store_true')
     parser.add_argument('--replicates', type=int)
     parser.add_argument('--genes_to_display', type=int)
+    parser.add_argument('--fname')
     args = parser.parse_args()
+    #print args.fname
 
     conf = SimpleConfig(config_keys, args.config)
     for fn in conf.GENOMEDIFF_FILES:
@@ -368,7 +329,7 @@ def main():
     elif args.procedure == 5:
         proc5(conf)
     elif args.procedure == 6:
-        proc6(conf)
+        proc6(conf,args)
     elif args.procedure == 7:
         proc7(conf)
 
