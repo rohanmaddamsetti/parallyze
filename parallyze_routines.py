@@ -310,3 +310,66 @@ def Statisticulate(conf, snptotal, star=True, reps=1000):
     ## THIS FUNCTION DOES NOT WORK RIGHT NOW
 #    shutil.rmtree('./temp')
 #    os.makedirs('temp')
+
+def window_iterator(seq, n=2):
+    "Returns a sliding window (of width n) over data from the iterable"
+    "   s -> (s0,s1,...s[n-1]), (s1,s2,...,sn), ...                   "
+    it = iter(seq)
+    result = tuple(itertools.islice(it, n))
+    if len(result) == n:
+        yield result    
+    for elem in it:
+        result = result[1:] + (elem,)
+        yield result
+
+def makeWindow(i, mutlist, distlist, window_len=200):
+    assert(len(mutlist) == len(distlist))
+    x = i
+    total_dist = 0
+    window = []
+    while total_dist <= window_len:
+        window.append(mutlist[x])
+        total_dist = total_dist + distlist[x]
+        if x == len(mutlist)-1: # chromosome is circular.
+            x = 0
+        else:
+            x = x + 1
+    return window
+
+# TODO: Update for refactor
+def write_gene_mut_counts(genecoords, mut_sites):
+    header = 'gene, ' + ', '.join([filename for filename in mut_sites])
+    with open('simulated_mutations_counts.csv', 'wb') as outfp:
+        outfp.write(header + '\n')
+        for locus_tag in genecoords:
+            cds = genecoords[locus_tag]
+            for filename in mut_sites:
+                line_muts = 0
+                for origbase in mut_sites[filename]:
+                    line_muts += ((mut_sites[filename][origbase] >= start) & (mut_sites[filename][origbase] < end)).sum()
+                row.append(line_muts)
+            outfp.write(', '.join([str(c) for c in row]) + '\n')
+
+# TODO: Update for refactor
+def write_gd_gene_mut_counts(genecoords, gd_genes):
+    header = 'gene, count'
+    with open('experimental_mutations_counts.csv', 'wb') as outfp:
+        outfp.write(header + '\n')
+        for _, _, gene, tag in genecoords:
+            muts = [tag]
+            if tag in gd_genes:
+                muts.append(gd_genes[tag])
+            else:
+                muts.append(0)
+            outfp.write(', '.join([str(c) for c in muts]) + '\n')
+
+# TODO: Update for refactor
+def write_proc6_locus_mut_counts(linesmut):
+    header = 'locus_tag; genomes'
+    with open('locus_mut_counts.csv', 'wb') as outfp:
+        outfp.write(header + '\n')
+        for row in linesmut:
+            locus = row[0]
+            genomes = row[1]
+            outfp.write('{}; '.format(locus))
+            outfp.write(', '.join([str(g) for g in genomes]) + '\n')
