@@ -1,5 +1,6 @@
 #parallyze_routines.py
 import numpy as np
+import matplotlib.pyplot as plt
 import operator
 import os
 import shutil
@@ -32,6 +33,10 @@ def calculate_dNdS(genomediffs):
     dS2 = 0
     dN3plus = 0
     dS3plus = 0
+    loci1 = 0
+    loci2 = 0
+    loci3plus = 0
+
     for mut_id, gd in genomediffs.iteritems():
         if gd.mut_type == 'SNP' and \
             gd.snp_type in ['synonymous', 'nonsynonymous']:            
@@ -46,16 +51,54 @@ def calculate_dNdS(genomediffs):
 
             if gd.snp_type == 'nonsynonymous':
                 dN += 1
-                dNtotal +=1
+                dNtotal += 1
             else:
                 dS += 1
-                dStotal+=1
-
-        
+                dStotal += 1 
             
             counts[locus_tag] = (dN, dS)
+    
+    for locusTag, dnds in counts.iteritems(): 
+    ###if sum of tuple of dN and dS per locus tag =1,...etc.
+        if dnds[0] + dnds[1] == 1:
+            dN1 += dnds[0]
+            dS1 += dnds[1]
+            loci1 += 1
+        elif dnds[0] + dnds[1] == 2:
+            dN2 += dnds[0] 
+            dS2 += dnds[1]
+            loci2 += 1
+        elif dnds[0] + dnds[1] >= 3:
+            dN3plus += dnds[0] 
+            dS3plus += dnds[1]
+            loci3plus += 1
+    
+    try: 
+        dNdS1 = float(dN1)/float(dS1)
+    except ZeroDivisionError:
+        dNdS1 = dN1
+        print "dS for singly mutating loci is 0. dN=", dN1
 
-    return counts, dNtotal, dStotal
+    try:
+        dNdS2 = float(dN2)/float(dS2)
+    except ZeroDivisionError:
+        dNdS2 = dN2   
+        print "dS for doubly mutating loci is 0. dN=", dN2
+
+    try:
+        dNdS3plus = float(dN3plus)/float(dS3plus)     
+    except ZeroDivisionError:
+        print "dS for triply or more mutating loci is 0. dN=", dN3plus
+        dNdS3plus = dN3plus
+
+    print "loci with 1 mutation:", loci1
+    print "loci with 2 mutations:", loci2
+    print "loci with 3 or more mutations:", loci3plus
+        
+    return counts, dNtotal, dStotal, dNdS1, dNdS2, dNdS3plus
+
+def dndsPlot(dndsGraphingDict):
+    pass
 
 # NOTE: Updated for refactor
 def snpcount(genomediffs, lines, snp_types):

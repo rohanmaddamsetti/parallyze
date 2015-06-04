@@ -133,10 +133,12 @@ def proc4(conf):
     genomediffs = {}
     for gd_file in conf.GENOMEDIFF_FILES:
         parse_genomediff(gd_file, record, genomediffs)
+    print '\n'
 
-    dNdS_counts,dNtotal,dStotal = calculate_dNdS(genomediffs)
-    print dNdS_counts
+    dNdS_counts,dNtotal,dStotal,dNdS1,dNdS2,dNdS3plus = calculate_dNdS(genomediffs)
+    #print dNdS_counts
     print "dN:",dNtotal, "  dS:", dStotal, "  dN/dS:", float(dNtotal)/float(dStotal)
+    print "dN/dS 1:", dNdS1, '\n', "dN/dS 2:", dNdS2, '\n', "dN/dS 3+:", dNdS3plus
 
 # TODO: Update for refactor
 def proc5(conf):
@@ -148,6 +150,7 @@ def proc5(conf):
     genomediffs = {}
     for gd_file in conf.GENOMEDIFF_FILES:
         parse_genomediff(gd_file, record, genomediffs = genomediffs)
+    print '\n'
 
     snpcounting = snpcount(genomediffs, conf.GENOMEDIFF_FILES, conf.snp_types)
 
@@ -176,7 +179,8 @@ def proc6(conf, args, out_fn=None):
     genomediffs = {}
     for gd_file in conf.GENOMEDIFF_FILES:
         parse_genomediff(gd_file, record, genomediffs=genomediffs)    
-   
+    print '\n'
+  
     counts = mutated_lines_per_gene(genomediffs, conf.snp_types)
 
     if out_fn is None:
