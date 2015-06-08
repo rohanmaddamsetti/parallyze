@@ -13,6 +13,7 @@ from Bio import SeqIO
 
 dna = ['A', 'T', 'C', 'G']
 
+
 def base_to_int(i):
     if i == 'A':
         return 0
@@ -22,6 +23,7 @@ def base_to_int(i):
         return 2
     elif i == 'T':
         return 3
+
 
 def int_to_base(i):
     if i == 0:
@@ -33,13 +35,16 @@ def int_to_base(i):
     elif i == 3:
         return 'T'
 
+
 def seq_to_int(seq):
-    converted_to_int=[base_to_int(b) for b in seq]
+    converted_to_int = [base_to_int(b) for b in seq]
     return converted_to_int
 
+
 def int_to_seq(seq):
-    converted_to_seq=[int_to_base(b) for b in seq]
+    converted_to_seq = [int_to_base(b) for b in seq]
     return converted_to_seq
+
 
 def complementary_base(base):
     if base == 'A':
@@ -51,9 +56,11 @@ def complementary_base(base):
     elif base == 'G':
         return 'C'
 
+
 def str_keyvalue(data):
-    s = '\n'.join([str(key)+': '+str(data[key]) for key in data])
+    s = '\n'.join([str(key) + ': ' + str(data[key]) for key in data])
     return s
+
 
 def parse_genbank(gb_file):
     '''
@@ -63,6 +70,7 @@ def parse_genbank(gb_file):
     # TODO: Look up how to quiet SeqIO.parse
     record = SeqIO.parse(gb_file, 'genbank').next()
     return record
+
 
 def print_genbank_summary(gb_record):
     '''

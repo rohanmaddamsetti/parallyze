@@ -15,6 +15,7 @@ import os
 import utils
 from utils import complementary_base
 
+
 class GenomeDiff(object):
 
     '''
@@ -33,6 +34,7 @@ class GenomeDiff(object):
     def __repr__(self):
         return '{0}: {1} {2}'.format(hash(self), self.mut_type, self.seq_id)
 
+
 def parse_genomediff(gd_file, gb_record, genomediffs=None):
     '''
     Given a genomediff file, parse out the mutations and store them
@@ -47,17 +49,17 @@ def parse_genomediff(gd_file, gb_record, genomediffs=None):
     if genomediffs is None:
         genomediffs = {}
     else:
-        assert type(genomediffs) == dict
-    
+        assert isinstance(genomediffs, dict)
+
     with open(gd_file) as fp:
-        for line in fp: 
-            #if line.startswith(i) for i in disregard_evidence:
+        for line in fp:
+            # if line.startswith(i) for i in disregard_evidence:
             if line.startswith('#') or \
-                line.startswith('JC') or \
-                line.startswith('RA') or \
-                line.startswith('UN') or \
-                line.startswith('MC') or \
-                line.startswith('NOTE'):
+                    line.startswith('JC') or \
+                    line.startswith('RA') or \
+                    line.startswith('UN') or \
+                    line.startswith('MC') or \
+                    line.startswith('NOTE'):
                 continue
 
             line = [token.strip() for token in line.split('\t')]
@@ -71,11 +73,18 @@ def parse_genomediff(gd_file, gb_record, genomediffs=None):
             mut_id = line[1]
             parent_ids = line[2].split(',')
             seq_id = line[3]
-            position = int(line[4])-1   ### NOTE: DOCUMENT THE ZERO-INDEXING OF POSITIONS IN GENOME!
+            # NOTE: DOCUMENT THE ZERO-INDEXING OF POSITIONS IN GENOME!
+            position = int(line[4]) - 1
             # which file (genome) did I come from?
             fname = gd_file
 
-            gd = GenomeDiff(mut_id, mut_type, parent_ids, seq_id, position, fname)
+            gd = GenomeDiff(
+                mut_id,
+                mut_type,
+                parent_ids,
+                seq_id,
+                position,
+                fname)
 
             if mut_type == 'SNP':
 
@@ -85,20 +94,21 @@ def parse_genomediff(gd_file, gb_record, genomediffs=None):
                 Parse key/value pairs
                 '''
                 for pair in line[6:]:
-                    key,_,value = pair.partition('=')
+                    key, _, value = pair.partition('=')
                     setattr(gd, key.strip(), value.strip())
 
                 assert hasattr(gd, 'snp_type')
                 assert hasattr(gd, 'gene_name')
-                gd.gene_name = [gene.strip() for gene in gd.gene_name.split('/')]
+                gd.gene_name = [gene.strip()
+                                for gene in gd.gene_name.split('/')]
                 assert hasattr(gd, 'locus_tag')
                 gd.locus_tag = [tag.strip() for tag in gd.locus_tag.split('/')]
-                
+
                 if gd.snp_type in ['nonsynonymous', 'synonymous']:
 
                     assert hasattr(gd, 'gene_strand')
                     if gd.gene_strand == '<':
-                        gd.new_base = complementary_base(line[5]) 
+                        gd.new_base = complementary_base(line[5])
 
                     assert hasattr(gd, 'codon_position')
                     assert hasattr(gd, 'codon_ref_seq')
@@ -106,13 +116,13 @@ def parse_genomediff(gd_file, gb_record, genomediffs=None):
                     gd.old_base = gd.codon_ref_seq[gd.codon_position]
 
                 elif gd.snp_type in ['intergenic', 'pseudogene', 'noncoding']:
-                    
+
                     gd.old_base = gb_record.seq[gd.position]
-                    
+
                     if gd.new_base == gd.old_base:
                         print >>sys.stderr, 'WARNING: new base == old base', \
-                        gd.snp_type, 'problem with reference or indexing'
-                
+                            gd.snp_type, 'problem with reference or indexing'
+
                 else:
                     print >>sys.stderr, 'ERROR: unrecognized SNP type', snp_type
 
@@ -125,7 +135,7 @@ def parse_genomediff(gd_file, gb_record, genomediffs=None):
 
                 gd.size = int(line[5])
 
-            elif mut_type=='INS':
+            elif mut_type == 'INS':
 
                 gd.new_seq = line[5]
 
@@ -147,13 +157,13 @@ def parse_genomediff(gd_file, gb_record, genomediffs=None):
 
             elif mut_type == 'INV':
                 gd.size = int(line[5])
-            
-            # Get a unique key for addressing this mutation  ## NOTE: I don't like this hashing but leave for now...what is a better key?
+
+            # Get a unique key for addressing this mutation  ## NOTE: I don't
+            # like this hashing but leave for now...what is a better key?
             key = hash(gd)
             # Store the line for this mutation
             gd.line = os.path.basename(gd_file)
 
-            
             genomediffs[key] = gd
 
     return genomediffs
