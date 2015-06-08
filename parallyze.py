@@ -183,10 +183,11 @@ def mutationTally(conf, args, out_fn=None): #old proc6
   
     counts = mutated_lines_per_gene(genomediffs, conf.snp_types)
 
-    if out_fn is None:
-        #timestr=time.strftime('%Y_%m_%d')
-        #out_fn = args.fname+timestr+'.tsv'
-        out_fn = "Procedure6Output"+'.tsv'
+    timestr=time.strftime('%Y_%m_%d_%H_%M_%S')
+    if args.fname==None:
+        out_fn = timestr+'.tsv'
+    else:
+        out_fn = args.fname+timestr+'.tsv'
     with open(out_fn, 'wb') as fp:
         for tag, data in counts:
             line = str(tag)
@@ -196,6 +197,7 @@ def mutationTally(conf, args, out_fn=None): #old proc6
             fp.write(line + '\n')
         #TODO: also include freq of mut types per mutating locus tag
             #e.g., 3 non-synon, 1 synon.
+        #TODO: also include optional functional annotation description
 
     #genecoords, total_bases = get_genecoordinates(record)   
     #why is this commented out? cuz I'm not here yet?
