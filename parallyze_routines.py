@@ -78,6 +78,7 @@ def calculate_dNdS(genomediffs):
     except ZeroDivisionError:
         dNdS1 = dN1
         print "dS for singly mutating loci is 0. dN=", dN1
+        #pseudocount: assume dS=1 to allow for math
 
     try:
         dNdS2 = float(dN2)/float(dS2)

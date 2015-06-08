@@ -7,7 +7,7 @@ Things to do:
 3. change locations of mutations to be dropped to align with included/specified gd mutations (ie, synon, non-synon, non-coding, etc)
 (done) 4. change from #muts/gene to #lines/gene
 5. analytic solution for SNPs
-6. (done?) dN/dS ratio
+6. graph for dN/dS ratio
 7. get genes that positions fall into. have # of times hit, not just hit/nothit (best method for this? locus tag? gene? (do intergenic now - intragenic later)
 8. sum, across all lines, # of mutations per gene, for experimental data (done) and simulated data - divide by reps for avg.? 
 9. print bar graphs? 
@@ -43,7 +43,7 @@ from Bio import AlignIO
 from Bio import Phylo
 
 # TODO: Update for refactor
-def proc1(conf):
+def simulationRM(conf): #old proc1
     #TODO: 
     '''simulated solution'''
 
@@ -89,7 +89,7 @@ def proc1(conf):
 
 '''
 
-def proc2(conf):
+def simulationEJB(conf): #old proc2
     '''EJB code to create histogram comparing actual and
          simulated genes mutated/lineage'''
 
@@ -118,7 +118,7 @@ def proc3(conf):
     #cleanup() # delete temp folder, doesn't work right now.
 
 # NOTE: Updated to standards for refactor
-def proc4(conf):
+def dNdS(conf): #old proc4
     '''
     Calculates dN/dS for all genes using the mutations in the
     provided genomediff files.
@@ -141,7 +141,7 @@ def proc4(conf):
     print "dN/dS 1:", dNdS1, '\n', "dN/dS 2:", dNdS2, '\n', "dN/dS 3+:", dNdS3plus
 
 # TODO: Update for refactor
-def proc5(conf):
+def analyticalEJB(conf): #old proc5
     '''analytical solution'''
 
     record = utils.parse_genbank(conf.REF_GENOME)
@@ -171,7 +171,7 @@ def proc5(conf):
     '''
 
 # NOTE: Updated for refactor
-def proc6(conf, args, out_fn=None):
+def mutationTally(conf, args, out_fn=None): #old proc6
     '''number of lines mutating in this particular gene'''
     record = utils.parse_genbank(conf.REF_GENOME)
     utils.print_genbank_summary(record)
@@ -184,8 +184,9 @@ def proc6(conf, args, out_fn=None):
     counts = mutated_lines_per_gene(genomediffs, conf.snp_types)
 
     if out_fn is None:
-        timestr=time.strftime('%Y_%m_%d')
-        out_fn = args.fname+timestr+'.tsv'
+        #timestr=time.strftime('%Y_%m_%d')
+        #out_fn = args.fname+timestr+'.tsv'
+        out_fn = "Procedure6Output"+'.tsv'
     with open(out_fn, 'wb') as fp:
         for tag, data in counts:
             line = str(tag)
@@ -200,7 +201,7 @@ def proc6(conf, args, out_fn=None):
     #why is this commented out? cuz I'm not here yet?
     #write_proc6_locus_mut_counts(genefreqs)
 
-def proc7(conf, window_len=200):
+def infoRegion(conf, window_len=200): #old proc7
     '''Procedure 7: find most informative regions of the genome.
     take the union of all genome diffs; need position and originating line info.
     find windows that are most dense with SNPs for freq-seq.
@@ -268,8 +269,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', dest='config', 
         help="parallyze config file", default='parallyze.conf')
-    parser.add_argument('--procedure', dest='procedure', type=int, 
-                        default=6, choices=range(1,8))
+    parser.add_argument('--procedure', dest='procedure', 
+                        default='mutationTally', choices=['simulationRM',
+                        'simulationEJB','dNdS','mutationTally','infoRegion',
+                        'analyticalEJB'])
     parser.add_argument('--nonsynonymous', action='store_true')
     parser.add_argument('--synonymous', action='store_true')
     parser.add_argument('--noncoding', action='store_true')
@@ -322,20 +325,20 @@ def main():
     if conf.INTERGENIC:
         conf.snp_types.add('intergenic')
 
-    if args.procedure == 1:
-	    proc1(conf)
-    elif args.procedure == 2:
-	    proc2(conf)
+    if args.procedure == 'simulationRM':
+	    simulationRM(conf)
+    elif args.procedure == 'simulationEJB':
+	    simulationEJB(conf)
     elif args.procedure == 3:
 	    proc3(conf)
-    elif args.procedure == 4:
-	    proc4(conf)
-    elif args.procedure == 5:
-        proc5(conf)
-    elif args.procedure == 6:
-        proc6(conf,args)
-    elif args.procedure == 7:
-        proc7(conf)
+    elif args.procedure == 'dNdS':
+	    dNdS(conf)
+    elif args.procedure == 'analyticalEJB':
+        analyticalEJB(conf)
+    elif args.procedure == 'mutationTally':
+        mutationTally(conf,args)
+    elif args.procedure == 'infoRegion':
+        infoRegion(conf)
 
 main()
 
