@@ -51,7 +51,7 @@ from Bio import Phylo
 
 
 # TODO: Update for refactor
-def simulationRM(conf):  # old proc1
+def simulationRM(conf, args):  # old proc1
     # TODO:
     '''simulated solution'''
 
@@ -106,17 +106,17 @@ def simulationRM(conf):  # old proc1
 '''
 
 
-def simulationEJB(conf):  # old proc2
+def simulationEJB(conf, args):  # old proc2
     '''EJB code to create histogram comparing actual and
          simulated genes mutated/lineage'''
 
     '''number of lines mutating in this particular gene'''
-
+    out_fn = fileName(args)
     # snp_total = BasicSNPCount(conf)  # just return the # of dN in genes.
     # print snp_total
     snp_totalEJB = snpcount(genomediffs, lines, snp_types)
 
-def proc3(conf):
+def proc3(conf, args):
 
     print "IN PROC 3"
     # aln = SNPsToAlignment(conf)
@@ -136,11 +136,12 @@ def proc3(conf):
 
 
 # NOTE: Updated to standards for refactor
-def dNdS(conf):  # old proc4
+def dNdS(conf, args):  # old proc4
     '''
     Calculates dN/dS for all genes using the mutations in the
     provided genomediff files.
     '''
+    out_fn = fileName(args)
     record = utils.parse_genbank(conf.REF_GENOME)
 
     '''
@@ -163,9 +164,9 @@ def dNdS(conf):  # old proc4
 
 
 # TODO: Update for refactor
-def analyticalEJB(conf):  # old proc5
+def analyticalEJB(conf, args):  # old proc5
     '''analytical solution'''
-
+    out_fn = fileName(args)
     record = utils.parse_genbank(conf.REF_GENOME)
     # utils.print_genbank_summary(record)
 
@@ -201,6 +202,8 @@ def mutationTally(conf, args):  # old proc6
     # utils.print_genbank_summary(record)
     # out_fn = None
 
+    out_fn = fileName(args)
+
     genomediffs = {}
     for gd_file in conf.GENOMEDIFF_FILES:
         parse_genomediff(gd_file, record, genomediffs=genomediffs)
@@ -208,11 +211,6 @@ def mutationTally(conf, args):  # old proc6
 
     counts = mutated_lines_per_gene(genomediffs, conf.snp_types)
 
-    timestr = time.strftime('%Y_%m_%d_%H_%M_%S')
-    if args.fname is None:
-        out_fn = timestr+'.tsv'
-    else:
-        out_fn = args.fname+timestr+'.tsv'
     with open(out_fn, 'wb') as fp:
         for tag, data in counts:
             line = str(tag)
@@ -229,7 +227,7 @@ def mutationTally(conf, args):  # old proc6
     # write_proc6_locus_mut_counts(genefreqs)
 
 
-def infoRegion(conf):  # old proc7
+def infoRegion(conf, args):  # old proc7
     '''Procedure 7: find most informative regions of the genome.
     take union of all genome diffs; need position and originating line info.
     find windows that are most dense with SNPs for freq-seq.

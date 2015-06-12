@@ -3,6 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import operator
+import time
 import os
 import shutil
 
@@ -20,6 +21,16 @@ import random
 import utils
 import itertools
 from pprint import pprint
+
+
+def fileName(args):
+    timestr = time.strftime('%Y_%m_%d_%H_%M_%S')
+    if args.fname is None:
+        out_fn = timestr+'.tsv'
+    else:
+        out_fn = args.fname+timestr+'.tsv'
+
+    return out_fn
 
 
 def calculate_dNdS(genomediffs):
