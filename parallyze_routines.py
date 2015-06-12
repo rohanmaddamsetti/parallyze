@@ -18,6 +18,7 @@ from Bio import Phylo
 
 import random
 import utils
+import itertools
 from pprint import pprint
 
 
@@ -414,6 +415,68 @@ def makeWindow(i, mutlist, distlist, window_len=200):
         else:
             x = x + 1
     return window
+
+
+def makeWindows(ref_record, mut_list, window_len=200):
+    mut_list.sort(key=lambda x: x.position)
+    dist_list = [y.position-x.position for x, y in window_iterator(mut_list)]
+
+    # # add the last elt of dist_list (bc chromosome is circular)
+    dist_list.append(mut_list[0].position +
+        len(ref_record.seq) - mut_list[-1].position)
+    assert(sum(dist_list) == len(ref_record.seq))
+    windows = []
+    for i, mut in enumerate(mut_list):
+        windows.append(makeWindow(i, mut_list, dist_list, window_len))
+
+    # # filter out structural mutations.
+    windows2 = []
+    for w in windows:
+        kinds = set([x.mut_type for x in w])
+        if kinds == set(['SNP']):
+            windows2.append(w)
+    windows2.sort(key=lambda x: len(x), reverse=True)
+
+    return windows2
+
+
+def pickWindows(conf, windows2):
+    # # pick non-overlapping windows that cover all genomes as markers
+    unmarked_genomes = {k:1 for k in conf.GENOMEDIFF_FILES}  # 1 if unmarked
+    markers = []
+
+    while sum(unmarked_genomes.values()):
+        best_window = []
+        most_new_marks = 0
+        for w in windows2:
+            # # make sure mutations UNIQUELY IDENTIFY genome.
+            # # CANNOT be the same new_base and position.
+            unique_positions = [mut.position for mut in w]
+            id_check = [(mut.position, mut.new_base) for mut in w]
+            unique_muts = [mut for mut in w if
+                           id_check.count((mut.position, mut.new_base)) == 1]
+            marks = [mut.fname for mut in unique_muts]
+            new_marks = len([x for x in marks if unmarked_genomes[x] == 1])
+
+            if new_marks > most_new_marks:
+                most_new_marks = new_marks
+                best_window = w
+
+        markers.append(best_window)
+        for mut in best_window:
+            unmarked_genomes[mut.fname] = 0
+                # the genome is not unmarked anymore!
+
+    return markers
+
+
+def printWindows(markers):
+    # # print the ranges that are most informative.
+    for i, m in enumerate(markers):
+        print "MARKER", i+1, ":"
+        for mut in m:
+            print mut.fname, mut.position, mut.old_base, \
+                mut.new_base, mut.gene_name
 
 
 # TODO: Update for refactor

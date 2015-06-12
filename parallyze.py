@@ -8,7 +8,8 @@ Things to do:
 3. change locations of mutations to be dropped to align with
    included/specified gd mutations (ie, synon, non-synon,
    non-coding, etc)
-(done) 4. change from #muts/gene to #lines/gene
+(done) 4. change from #muts/gene to #lines/gene # don't i want
+    number of muts/gene? (12jun15, ejb)
 5. analytic solution for SNPs
 6. graph for dN/dS ratio
 7. get genes that positions fall into. have # of times hit, not
@@ -111,9 +112,9 @@ def simulationEJB(conf):  # old proc2
 
     '''number of lines mutating in this particular gene'''
 
-    snp_total = BasicSNPCount(conf)  # just return the # of dN in genes.
-    print snp_total
-
+    # snp_total = BasicSNPCount(conf)  # just return the # of dN in genes.
+    # print snp_total
+    snp_totalEJB = snpcount(genomediffs, lines, snp_types)
 
 def proc3(conf):
 
@@ -155,9 +156,9 @@ def dNdS(conf):  # old proc4
     dNdS_counts, dNtotal, dStotal, dNdS1, dNdS2, \
         dNdS3plus = calculate_dNdS(genomediffs)
     # print dNdS_counts
-    print "dN:", dNtotal, "  dS:", dStotal, "  dN/dS:",
+    print "dN:", dNtotal, "  dS:", dStotal, "  dN/dS:", \
       float(dNtotal)/float(dStotal)
-    print "dN/dS 1:", dNdS1, '\n', "dN/dS 2:", dNdS2,
+    print "dN/dS 1:", dNdS1, '\n', "dN/dS 2:", dNdS2, \
       '\n', "dN/dS 3+:", dNdS3plus
 
 
@@ -166,7 +167,7 @@ def analyticalEJB(conf):  # old proc5
     '''analytical solution'''
 
     record = utils.parse_genbank(conf.REF_GENOME)
-    utils.print_genbank_summary(record)
+    # utils.print_genbank_summary(record)
 
     genomediffs = {}
     for gd_file in conf.GENOMEDIFF_FILES:
@@ -194,10 +195,11 @@ def analyticalEJB(conf):  # old proc5
 
 
 # NOTE: Updated for refactor
-def mutationTally(conf, args, out_fn=None):  # old proc6
+def mutationTally(conf, args):  # old proc6
     '''number of lines mutating in this particular gene'''
     record = utils.parse_genbank(conf.REF_GENOME)
-    utils.print_genbank_summary(record)
+    # utils.print_genbank_summary(record)
+    # out_fn = None
 
     genomediffs = {}
     for gd_file in conf.GENOMEDIFF_FILES:
@@ -227,7 +229,7 @@ def mutationTally(conf, args, out_fn=None):  # old proc6
     # write_proc6_locus_mut_counts(genefreqs)
 
 
-def infoRegion(conf, window_len=200):  # old proc7
+def infoRegion(conf):  # old proc7
     '''Procedure 7: find most informative regions of the genome.
     take union of all genome diffs; need position and originating line info.
     find windows that are most dense with SNPs for freq-seq.
@@ -236,54 +238,14 @@ def infoRegion(conf, window_len=200):  # old proc7
     ref_record = utils.parse_genbank(conf.REF_GENOME)
     mut_list = []
     conf.GENOMEDIFF_FILES.sort()  # sort to ensure order is always the same
+
     for gd_file in conf.GENOMEDIFF_FILES:
         gd_dict = parse_genomediff(gd_file, ref_record)
         mut_list = mut_list + gd_dict.values()
-    mut_list.sort(key=lambda x: x.position)
-    dist_list = [y.position-x.position for x, y in window_iterator(mut_list)]
-    # # add the last elt of dist_list (bc chromosome is circular)
-    dist_list.append(mut_list[0].position +
-        len(ref_record.seq) - mut_list[-1].position)
-    assert(sum(dist_list) == len(ref_record.seq))
-    windows = []
-    for i, mut in enumerate(mut_list):
-        windows.append(makeWindow(i, mut_list, dist_list, window_len))
-    # # filter out structural mutations.
-    windows2 = []
-    for w in windows:
-        kinds = set([x.mut_type for x in w])
-        if kinds == set(['SNP']):
-            windows2.append(w)
-    windows2.sort(key=lambda x: len(x), reverse=True)
 
-    # # pick non-overlapping windows that cover all genomes as markers
-    unmarked_genomes = {k:1 for k in conf.GENOMEDIFF_FILES}  # 1 if unmarked
-    markers = []
-    while sum(unmarked_genomes.values()):
-        best_window = []
-        most_new_marks = 0
-        for w in windows2:
-            # # make sure mutations UNIQUELY IDENTIFY genome.
-            # # CANNOT be the same new_base and position.
-            unique_positions = [mut.position for mut in w]
-            id_check = [(mut.position, mut.new_base) for mut in w]
-            unique_muts = [mut for mut in w if
-                           id_check.count((mut.position, mut.new_base)) == 1]
-            marks = [mut.fname for mut in unique_muts]
-            new_marks = len([x for x in marks if unmarked_genomes[x] == 1])
-            if new_marks > most_new_marks:
-                most_new_marks = new_marks
-                best_window = w
-        markers.append(best_window)
-        for mut in best_window:
-            unmarked_genomes[mut.fname] = 0
-                # the genome is not unmarked anymore!
-    # # print the ranges that are most informative.
-    for i, m in enumerate(markers):
-        print "MARKER", i+1, ":"
-        for mut in m:
-            print mut.fname, mut.position, mut.old_base, 
-                mut.new_base, mut.gene_name
+    windows2 = makeWindows(ref_record, mut_list)
+    markers = pickWindows(conf, windows2)
+    printWindows(markers)
 
 
 config_keys = { 'REF_GENOME': str,
