@@ -156,9 +156,10 @@ def mutated_lines_per_gene(genomediffs, snp_types):
         if gd.mut_type == 'SNP' and gd.snp_type in snp_types:
             tag = tuple(gd.locus_tag)
             if tag not in tag_lines:
-                tag_lines[tag] = {'genes': set(), 'lines': set()}
+                tag_lines[tag] = {'genes': set(), 'lines': set(), 'gene_product': set()}
             tag_lines[tag]['lines'].add(gd.line)
             tag_lines[tag]['genes'].add(tuple(gd.gene_name))
+            tag_lines[tag]['gene_product'].add(tuple(gd.gene_product))
 
     sorted_tag_lines = zip(tag_lines.keys(), tag_lines.values())
     sorted_tag_lines = sorted(sorted_tag_lines,

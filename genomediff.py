@@ -103,6 +103,9 @@ def parse_genomediff(gd_file, gb_record, genomediffs=None):
                                 for gene in gd.gene_name.split('/')]
                 assert hasattr(gd, 'locus_tag')
                 gd.locus_tag = [tag.strip() for tag in gd.locus_tag.split('/')]
+                assert hasattr(gd, 'gene_product')
+                gd.gene_product = [product.strip()
+                                   for product in gd.gene_product.split('/')]
 
                 if gd.snp_type in ['nonsynonymous', 'synonymous']:
 

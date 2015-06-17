@@ -217,10 +217,11 @@ def mutationTally(conf, args):  # old proc6
             line += '\t' + str(tuple(data['genes']))
             line += '\t' + str(len(data['lines']))
             line += '\t' + str(tuple(data['lines']))
+            line += '\t' + str(tuple(data['gene_product']))
             fp.write(line + '\n')
         # TODO: also include freq of mut types per mutating locus tag
             # e.g., 3 non-synon, 1 synon.
-        # TODO: also include optional functional annotation description
+        # TODO: also include optional gene_product description
 
     # genecoords, total_bases = get_genecoordinates(record)   
     # why is this commented out? cuz I'm not here yet?
@@ -253,6 +254,7 @@ config_keys = { 'REF_GENOME': str,
                 'NONCODING': bool,
                 'PSEUDOGENE': bool,
                 'INTERGENIC': bool,
+                'GENE_PRODUCT': bool,
                 'REPLICATES': int,
                 'GENES_TO_DISPLAY': int}
 
@@ -273,6 +275,7 @@ def main():
     parser.add_argument('--replicates', type=int)
     parser.add_argument('--genes_to_display', type=int)
     parser.add_argument('--fname')
+    parser.add_argument('--gene_product', action='store_true')
     args = parser.parse_args()
     # print args.fname
 
@@ -295,6 +298,8 @@ def main():
         conf.PSEUDOGENE = True
     if args.intergenic:
         conf.INTERGENIC = True
+    if args.gene_product:
+        conf.GENE_PRODUCT = True
     if args.replicates and args.replicates > 0:
         conf.REPLICATES = args.replicates
     if args.genes_to_display and args.genes_to_display >= 0:
