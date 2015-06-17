@@ -1,6 +1,9 @@
-#parallyze_routines.py
+# parallyze_routines.py
+
 import numpy as np
+import matplotlib.pyplot as plt
 import operator
+import time
 import os
 import shutil
 
@@ -16,7 +19,19 @@ from Bio import Phylo
 
 import random
 import utils
+import itertools
 from pprint import pprint
+
+
+def fileName(args):
+    timestr = time.strftime('%Y_%m_%d_%H_%M_%S')
+    if args.fname is None:
+        out_fn = timestr+'.tsv'
+    else:
+        out_fn = args.fname+timestr+'.tsv'
+
+    return out_fn
+
 
 def calculate_dNdS(genomediffs):
     '''input: the output from parsed gd files
@@ -32,11 +47,15 @@ def calculate_dNdS(genomediffs):
     dS2 = 0
     dN3plus = 0
     dS3plus = 0
+    loci1 = 0
+    loci2 = 0
+    loci3plus = 0
+
     for mut_id, gd in genomediffs.iteritems():
         if gd.mut_type == 'SNP' and \
-            gd.snp_type in ['synonymous', 'nonsynonymous']:            
-               # These all only have one locus_tag, and we can't
-               # use a list as a key, so just get the value
+                gd.snp_type in ['synonymous', 'nonsynonymous']:
+                # These all only have one locus_tag, and we can't
+                # use a list as a key, so just get the value
             locus_tag = gd.locus_tag[0]
 
             if locus_tag in counts:
@@ -46,16 +65,57 @@ def calculate_dNdS(genomediffs):
 
             if gd.snp_type == 'nonsynonymous':
                 dN += 1
-                dNtotal +=1
+                dNtotal += 1
             else:
                 dS += 1
-                dStotal+=1
+                dStotal += 1
 
-        
-            
             counts[locus_tag] = (dN, dS)
 
-    return counts, dNtotal, dStotal
+    for locusTag, dnds in counts.iteritems():
+        # # # if sum of tuple of dN and dS per locus tag =1,...etc.
+        if dnds[0] + dnds[1] == 1:
+            dN1 += dnds[0]
+            dS1 += dnds[1]
+            loci1 += 1
+        elif dnds[0] + dnds[1] == 2:
+            dN2 += dnds[0]
+            dS2 += dnds[1]
+            loci2 += 1
+        elif dnds[0] + dnds[1] >= 3:
+            dN3plus += dnds[0]
+            dS3plus += dnds[1]
+            loci3plus += 1
+
+    try:
+        dNdS1 = float(dN1) / float(dS1)
+    except ZeroDivisionError:
+        dNdS1 = dN1
+        print "dS for singly mutating loci is 0. dN=", dN1
+        # pseudocount: assume dS=1 to allow for math
+
+    try:
+        dNdS2 = float(dN2) / float(dS2)
+    except ZeroDivisionError:
+        dNdS2 = dN2
+        print "dS for doubly mutating loci is 0. dN=", dN2
+
+    try:
+        dNdS3plus = float(dN3plus) / float(dS3plus)
+    except ZeroDivisionError:
+        print "dS for triply or more mutating loci is 0. dN=", dN3plus
+        dNdS3plus = dN3plus
+
+    print "loci with 1 mutation:", loci1
+    print "loci with 2 mutations:", loci2
+    print "loci with 3 or more mutations:", loci3plus
+
+    return counts, dNtotal, dStotal, dNdS1, dNdS2, dNdS3plus
+
+
+def dndsPlot(dndsGraphingDict):
+    pass
+
 
 # NOTE: Updated for refactor
 def snpcount(genomediffs, lines, snp_types):
@@ -65,10 +125,10 @@ def snpcount(genomediffs, lines, snp_types):
 
     file_matrices = {}
     for line in lines:
-        file_matrices[line] = np.zeros((4,4), dtype = int)
+        file_matrices[line] = np.zeros((4, 4), dtype=int)
 
     for key, gd in genomediffs.iteritems():
-        if gd.mut_type=='SNP' and gd.snp_type in snp_types:
+        if gd.mut_type == 'SNP' and gd.snp_type in snp_types:
             old_base = utils.seq_to_int(gd.old_base)
             new_base = utils.seq_to_int(gd.new_base)
             line = gd.line
@@ -79,6 +139,7 @@ def snpcount(genomediffs, lines, snp_types):
         print 'from (row) / to (column) :', '\n', mat, '\n'
 
     return file_matrices
+
 
 # NOTE: Updated for refactor
 def mutated_lines_per_gene(genomediffs, snp_types):
@@ -95,19 +156,23 @@ def mutated_lines_per_gene(genomediffs, snp_types):
         if gd.mut_type == 'SNP' and gd.snp_type in snp_types:
             tag = tuple(gd.locus_tag)
             if tag not in tag_lines:
-                tag_lines[tag] = {'genes': set(), 'lines': set()}
+                tag_lines[tag] = {'genes': set(), 'lines': set(), 'gene_product': set()}
             tag_lines[tag]['lines'].add(gd.line)
             tag_lines[tag]['genes'].add(tuple(gd.gene_name))
+            tag_lines[tag]['gene_product'].add(tuple(gd.gene_product))
 
     sorted_tag_lines = zip(tag_lines.keys(), tag_lines.values())
-    sorted_tag_lines = sorted(sorted_tag_lines, key=lambda x: len(x[1]['lines']), reverse = True)
-    
+    sorted_tag_lines = sorted(sorted_tag_lines,
+                              key=lambda x: len(x[1]['lines']), reverse=True)
+
     return sorted_tag_lines
+
 
 # TODO: Update for refactor? low priority
 # TODO: if position is intergenic (or etc.), choose new position
-def snpmutate(mat, num_replicates, refseq_arr): 
-    '''input: matrixdict and refseq as numpy array from snpcount and parse_ref, respectively
+def snpmutate(mat, num_replicates, refseq_arr):
+    '''input: matrixdict and refseq as numpy array from
+           snpcount and parse_ref, respectively
     called by get_mut_sites
 
     returns a dict with original base as key, numpy array as value:
@@ -115,26 +180,31 @@ def snpmutate(mat, num_replicates, refseq_arr):
       'T': np.array(num_replicates by num_mutations T to others),
       ...
     }
-    Where each array has num_replicates rows and columns corresponding to the number of mutations
+    Where each array has num_replicates rows and columns
+        corresponding to the number of mutations
     for the original base
     '''
-#below was recently commented out for purposes of functionality
-#    mut_sites = {}
-#    for origbase in mat:
-#        num_muts = #numpy.zeros sum across matrix row
+# below was recently commented out for purposes of functionality
+# mut_sites = {}
+# for origbase in mat:
+# num_muts = #numpy.zeros sum across matrix row
 
     '''
     mut_sites = {}
     #print matrix
-    for origbase in matrix:  
-        num_muts = sum(matrix[origbase][newbase] for newbase in matrix[origbase])
+    for origbase in matrix:
+        num_muts = sum(matrix[origbase][newbase] for newbase
+            in matrix[origbase])
         #print origbase, num_muts
         sites = np.zeros((num_replicates, num_muts), dtype=int)
         for rep in xrange(num_replicates):
             if rep % 50 == 0 and rep > 0: #prints progress report
                 print '\t... rep', rep, 'for base', origbase
             try:
-                rep_sites = np.random.choice(np.where(refseq_arr==origbase)[0], size=num_muts, replace=False) #[0] because returns a tuple, and we just want 1st element (list of indices). 
+                rep_sites = np.random.choice(np.where(
+                   refseq_arr==origbase)[0], size=num_muts, replace=False)
+     # [0] because returns a tuple, and we just want 1st
+        element (list of indices).
             except ValueError as e:
                 print >>sys.stderr, e
                 print >>sys.stderr, 'Error getting sites for replicate', rep
@@ -145,16 +215,19 @@ def snpmutate(mat, num_replicates, refseq_arr):
     return mut_sites
     '''
 
-# TODO: Refactor? low priority. do for comparison btwn analytic and simulation
+
+# TODO: Refactor? low priority. do for comparison btwn analytic and simuln.
 def get_mut_sites(matrices, refseq, num_replicates):
     mut_sites = {}
-    refseq_arr = np.array([c for c in refseq]) 
+    refseq_arr = np.array([c for c in refseq])
     for filename in matrices:
         print '\n** generating mutation sites for', filename
-        mut_sites[filename] = snpmutate(matrices[filename], num_replicates, refseq_arr)
+        mut_sites[filename] = snpmutate(matrices[filename],
+                                        num_replicates, refseq_arr)
     print
     '''
-    mut_sites = { 'filename1': { 'A': array(row for reps, columns for mut position indices), 
+    mut_sites = { 'filename1': { 'A': array(row for reps, columns
+        for mut position indices),
                                  'T': array(...) ... },
                   'filename2': {...},
                   ...
@@ -162,37 +235,44 @@ def get_mut_sites(matrices, refseq, num_replicates):
     '''
     return mut_sites
 
+
 def SNPsToAlignment(conf):
     ''' rows are lexicographically sorted conf.GENOMEDIFF_FILES, and
-    the last row is the reference sequence. columns are all positions 
+    the last row is the reference sequence. columns are all positions
     that evolved in the set of genomes.
     '''
-    
+
     ref_record = utils.parse_genbank(conf.REF_GENOME)
-    #utils.print_genbank_summary(ref_record)
+    # utils.print_genbank_summary(ref_record)
 
     snps = []
-    ## each elt in snps is a tuple: (position, old_base, new_base, locus_tag, label)
-    conf.GENOMEDIFF_FILES.sort() ## So I can assume the diffs are sorted.
+    # # each elt in snps is a tuple: (position, old_base,
+    # new_base, locus_tag, label)
+    conf.GENOMEDIFF_FILES.sort()  # # So I can assume the diffs are sorted.
     for gd_file in conf.GENOMEDIFF_FILES:
         gd_dict = parse_genomediff(gd_file, ref_record)
         for k, v in gd_dict.iteritems():
-            if v.mut_type != 'SNP':  ## only consider SNPs
+            if v.mut_type != 'SNP':  # # only consider SNPs
                 continue
             old_base = ref_record[v.position]
-            snps.append((v.position, old_base, v.new_base, v.locus_tag[0], gd_file))
-    snps.sort(key=lambda elt: elt[0]) #sort by position.
-    cols = [x for x in set([elt[0] for elt in snps])]
-    cols.sort()
-    ## The LAST row of the alignment is the reference.
-    alignment = [['']*len(cols) for x in range(len(conf.GENOMEDIFF_FILES)+1)]
-    ## make an index of positions to columns.
+            snps.append(
+                (v.position,
+                 old_base,
+                 v.new_base,
+                 v.locus_tag[0],
+                 gd_file))
+    snps.sort(key=lambda elt: elt[0])  # sort by position.
+    cols = sorted([x for x in set([elt[0] for elt in snps])])
+    # # The LAST row of the alignment is the reference.
+    alignment = [[''] * len(cols)
+                 for x in range(len(conf.GENOMEDIFF_FILES) + 1)]
+    # # make an index of positions to columns.
     for elt in snps:
         i = conf.GENOMEDIFF_FILES.index(elt[4])
         j = cols.index(elt[0])
-        alignment[-1][j] = elt[1] ## the reference sequence.
+        alignment[-1][j] = elt[1]  # # the reference sequence.
         alignment[i][j] = elt[2]
-    # now fill in the empty entries in the matrix with the reference seq value.
+    # now fill the empty entries in the matrix w/ the ref seq value.
     ref = alignment[-1]
     print ref
     for i in range(len(alignment)):
@@ -202,24 +282,30 @@ def SNPsToAlignment(conf):
 
     str_alignment = [''.join(x) for x in alignment]
     aln_ids = [os.path.splitext(gd)[0] for gd in conf.GENOMEDIFF_FILES]
-    aln_ids = aln_ids + [ref_record.id] # add the reference. 
-    site_recs = [SeqRecord(Seq(x), id=y) for x,y in zip(str_alignment, aln_ids)] 
-    ## turn into a Biopython Alignment object.
+    aln_ids = aln_ids + [ref_record.id]  # add the reference.
+    site_recs = [
+        SeqRecord(
+            Seq(x), id=y) for x, y in zip(
+            str_alignment, aln_ids)]
+    # # turn into a Biopython Alignment object.
     msa = MultipleSeqAlignment(site_recs)
     return msa
 
+
 def AlignmentToPhylogeny(aln):
-    ## write alignment to a temporary file.
+    # # write alignment to a temporary file.
     out_handle = open("temp/aln.phy", "w")
     AlignIO.write(aln, out_handle, "phylip-relaxed")
     out_handle.close()
-    ## raxml needs phylip formatted data.
-    os.chdir("temp") ## want RaxML output to go in the temp directory.
-    raxml_cline = RaxmlCommandline(sequences="aln.phy", threads=2, model="GTRGAMMA", name="test")
+    # # raxml needs phylip formatted data.
+    os.chdir("temp")  # # want RaxML output to go in the temp directory.
+    raxml_cline = RaxmlCommandline(sequences="aln.phy",
+                                   threads=2, model="GTRGAMMA", name="test")
     raxml_cline()
     os.chdir("..")
     tree = Phylo.read("temp/RAxML_bestTree.test", "newick")
     return tree
+
 
 def GenotypeTree(phy, conf):
     ''' takes a Biopython Tree object. returns a tree of genotypes, mutations
@@ -227,11 +313,12 @@ def GenotypeTree(phy, conf):
     print phy
     for node in phy.find_clades():
         print node
-    
+
     return None
 
+
 def BasicSNPCount(conf):
-    ''' return the total number of nonsynonymous SNPs in genes, 
+    ''' return the total number of nonsynonymous SNPs in genes,
         assumes all mutations are
         independent (star phylogeny).'''
     snpcount = 0
@@ -239,11 +326,12 @@ def BasicSNPCount(conf):
     for gd_file in conf.GENOMEDIFF_FILES:
         gd_dict = parse_genomediff(gd_file, ref_record)
         for k, v in gd_dict.iteritems():
-            if v.mut_type != 'SNP':  ## only consider SNPs,
+            if v.mut_type != 'SNP':  # # only consider SNPs,
                 continue
-            if v.snp_type == 'nonsynonymous': ## and those in genes.
+            if v.snp_type == 'nonsynonymous':  # and those in genes.
                 snpcount = snpcount + 1
     return snpcount
+
 
 def formGenomeCDF(ref_record, loci):
     genes = []
@@ -256,19 +344,20 @@ def formGenomeCDF(ref_record, loci):
             if locus_tag in loci:
                 genes.append(locus_tag)
                 pdf.append(len(f))
-    pdf = [float(x)/float(all_genes_length) for x in pdf]
+    pdf = [float(x) / float(all_genes_length) for x in pdf]
     cdf = []
-    for i,p in enumerate(pdf):
+    for i, p in enumerate(pdf):
         if i == 0:
             cdf.append(p)
         else:
-            cdf.append(p+cdf[-1])
+            cdf.append(p + cdf[-1])
     return (genes, cdf)
-        
+
+
 def Statisticulate(conf, snptotal, star=True, reps=1000):
     ''' rewrite when the genotype tree has been made correctly'''
 
-    ######## count nonsynonymous mutations in each gene in the gd files.
+    # ##### count nonsynonymous mutations in each gene in the gd files.
     if star:
         nonsynonymous_mutations = {}
         ref_record = utils.parse_genbank(conf.REF_GENOME)
@@ -282,34 +371,36 @@ def Statisticulate(conf, snptotal, star=True, reps=1000):
                     if locus_tag not in nonsynonymous_mutations:
                         nonsynonymous_mutations[locus_tag] = 1
                     else:
-                        nonsynonymous_mutations[locus_tag] = nonsynonymous_mutations[locus_tag] + 1
+                        nonsynonymous_mutations[
+                            locus_tag] = nonsynonymous_mutations[locus_tag] + 1
     else:
-        pass ## if not a star phylogeny, use a tree.
+        pass  # # if not a star phylogeny, use a tree.
 
-    ## How many times does a dN occur in the gene?
-    pval_numerator = {k:0 for k in nonsynonymous_mutations}
-    genes,cdf = formGenomeCDF(ref_record, nonsynonymous_mutations.keys())
+    # # How many times does a dN occur in the gene?
+    pval_numerator = {k: 0 for k in nonsynonymous_mutations}
+    genes, cdf = formGenomeCDF(ref_record, nonsynonymous_mutations.keys())
     for replicate in range(reps):
         for m in range(snptotal):
-            nulldist = {k:0 for k in nonsynonymous_mutations}
-            ## draw a random number, and see which gene mutated.
+            nulldist = {k: 0 for k in nonsynonymous_mutations}
+            # # draw a random number, and see which gene mutated.
             rando = random.random()
-            if rando <= cdf[-1]: ## rando is in the gene set.
-                for i,x in enumerate(cdf):
+            if rando <= cdf[-1]:  # # rando is in the gene set.
+                for i, x in enumerate(cdf):
                     if rando <= x:
                         nulldist[genes[i]] = nulldist[genes[i]] + 1
-                        break ## found the right bin.
+                        break  # # found the right bin.
         for g in nulldist:
             if nulldist[g] >= nonsynonymous_mutations[g]:
                 pval_numerator[g] = pval_numerator[g] + 1
-    pvals = {k:float(v)/float(reps) for k,v in pval_numerator.iteritems()}
-    for k,v in pvals.iteritems():
+    pvals = {k: float(v) / float(reps) for k, v in pval_numerator.iteritems()}
+    for k, v in pvals.iteritems():
         print "locus_tag:", k, "p-value:", v
- 
-#def cleanup(): ## remove temp folder with inputs, and recreate it empty.
-    ## THIS FUNCTION DOES NOT WORK RIGHT NOW
+
+# def cleanup(): ## remove temp folder with inputs, and recreate it empty.
+    # # THIS FUNCTION DOES NOT WORK RIGHT NOW
 #    shutil.rmtree('./temp')
 #    os.makedirs('temp')
+
 
 def window_iterator(seq, n=2):
     "Returns a sliding window (of width n) over data from the iterable"
@@ -317,10 +408,11 @@ def window_iterator(seq, n=2):
     it = iter(seq)
     result = tuple(itertools.islice(it, n))
     if len(result) == n:
-        yield result    
+        yield result
     for elem in it:
         result = result[1:] + (elem,)
         yield result
+
 
 def makeWindow(i, mutlist, distlist, window_len=200):
     assert(len(mutlist) == len(distlist))
@@ -330,11 +422,74 @@ def makeWindow(i, mutlist, distlist, window_len=200):
     while total_dist <= window_len:
         window.append(mutlist[x])
         total_dist = total_dist + distlist[x]
-        if x == len(mutlist)-1: # chromosome is circular.
+        if x == len(mutlist) - 1:  # chromosome is circular.
             x = 0
         else:
             x = x + 1
     return window
+
+
+def makeWindows(ref_record, mut_list, window_len=200):
+    mut_list.sort(key=lambda x: x.position)
+    dist_list = [y.position-x.position for x, y in window_iterator(mut_list)]
+
+    # # add the last elt of dist_list (bc chromosome is circular)
+    dist_list.append(mut_list[0].position +
+        len(ref_record.seq) - mut_list[-1].position)
+    assert(sum(dist_list) == len(ref_record.seq))
+    windows = []
+    for i, mut in enumerate(mut_list):
+        windows.append(makeWindow(i, mut_list, dist_list, window_len))
+
+    # # filter out structural mutations.
+    windows2 = []
+    for w in windows:
+        kinds = set([x.mut_type for x in w])
+        if kinds == set(['SNP']):
+            windows2.append(w)
+    windows2.sort(key=lambda x: len(x), reverse=True)
+
+    return windows2
+
+
+def pickWindows(conf, windows2):
+    # # pick non-overlapping windows that cover all genomes as markers
+    unmarked_genomes = {k:1 for k in conf.GENOMEDIFF_FILES}  # 1 if unmarked
+    markers = []
+
+    while sum(unmarked_genomes.values()):
+        best_window = []
+        most_new_marks = 0
+        for w in windows2:
+            # # make sure mutations UNIQUELY IDENTIFY genome.
+            # # CANNOT be the same new_base and position.
+            unique_positions = [mut.position for mut in w]
+            id_check = [(mut.position, mut.new_base) for mut in w]
+            unique_muts = [mut for mut in w if
+                           id_check.count((mut.position, mut.new_base)) == 1]
+            marks = [mut.fname for mut in unique_muts]
+            new_marks = len([x for x in marks if unmarked_genomes[x] == 1])
+
+            if new_marks > most_new_marks:
+                most_new_marks = new_marks
+                best_window = w
+
+        markers.append(best_window)
+        for mut in best_window:
+            unmarked_genomes[mut.fname] = 0
+                # the genome is not unmarked anymore!
+
+    return markers
+
+
+def printWindows(markers):
+    # # print the ranges that are most informative.
+    for i, m in enumerate(markers):
+        print "MARKER", i+1, ":"
+        for mut in m:
+            print mut.fname, mut.position, mut.old_base, \
+                mut.new_base, mut.gene_name
+
 
 # TODO: Update for refactor
 def write_gene_mut_counts(genecoords, mut_sites):
@@ -346,9 +501,12 @@ def write_gene_mut_counts(genecoords, mut_sites):
             for filename in mut_sites:
                 line_muts = 0
                 for origbase in mut_sites[filename]:
-                    line_muts += ((mut_sites[filename][origbase] >= start) & (mut_sites[filename][origbase] < end)).sum()
+                    line_muts += (
+                        (mut_sites[filename][origbase] >= start) & (
+                            mut_sites[filename][origbase] < end)).sum()
                 row.append(line_muts)
             outfp.write(', '.join([str(c) for c in row]) + '\n')
+
 
 # TODO: Update for refactor
 def write_gd_gene_mut_counts(genecoords, gd_genes):
@@ -362,6 +520,7 @@ def write_gd_gene_mut_counts(genecoords, gd_genes):
             else:
                 muts.append(0)
             outfp.write(', '.join([str(c) for c in muts]) + '\n')
+
 
 # TODO: Update for refactor
 def write_proc6_locus_mut_counts(linesmut):
