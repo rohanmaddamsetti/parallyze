@@ -217,11 +217,13 @@ def mutationTally(conf, args):  # old proc6
             line += '\t' + str(tuple(data['genes']))
             line += '\t' + str(len(data['lines']))
             line += '\t' + str(tuple(data['lines']))
-            line += '\t' + str(tuple(data['gene_product']))
+            if conf.GENE_PRODUCT == True:
+                line += '\t' + str(tuple(data['gene_product']))
             fp.write(line + '\n')
         # TODO: also include freq of mut types per mutating locus tag
             # e.g., 3 non-synon, 1 synon.
-        # TODO: also include optional gene_product description
+        # TODO: also include other muts and mut types in locus_tags 
+        # with multiple SNP muts across lines
 
     # genecoords, total_bases = get_genecoordinates(record)   
     # why is this commented out? cuz I'm not here yet?
