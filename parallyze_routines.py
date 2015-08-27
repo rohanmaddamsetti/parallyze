@@ -167,8 +167,9 @@ def SNPsToAlignment(conf):
         for k, v in gd_dict.iteritems():
             if v.mut_type != 'SNP':  ## only consider SNPs
                 continue
-            old_base = ref_record[v.position]
-            snps.append((v.position, old_base, v.new_base, v.locus_tag[0], gd_file))
+            ## NOTE: parse_genomediff converts 1-based indexing to 0-based indexing; 
+            ## this line changes it back for reporting to be consistent with original gd files.
+            snps.append((v.position+1, v.old_base, v.new_base, v.locus_tag[0], gd_file))
     snps.sort(key=lambda elt: elt[0]) #sort by position.
     cols = [x for x in set([elt[0] for elt in snps])]
     cols.sort()
@@ -182,7 +183,7 @@ def SNPsToAlignment(conf):
         alignment[i][j] = elt[2]
     # now fill in the empty entries in the matrix with the reference seq value.
     ref = alignment[-1]
-    print ref
+    #print ref
     for i in range(len(alignment)):
         for j in range(len(cols)):
             if alignment[i][j] == '':
@@ -194,7 +195,17 @@ def SNPsToAlignment(conf):
     site_recs = [SeqRecord(Seq(x), id=y) for x,y in zip(str_alignment, aln_ids)] 
     ## turn into a Biopython Alignment object.
     msa = MultipleSeqAlignment(site_recs)
-    return msa
+    ## return both the msa as well as the position and gene for each column in the alignment.
+    msa_annotation = []
+    for i,pos in enumerate(cols):
+        locus = None
+        for elt in snps:
+            if elt[0] == pos:
+                locus = elt[3]
+                break
+        annotation = (i,pos,locus)
+        msa_annotation.append(annotation)
+    return msa, msa_annotation
 
 def AlignmentToPhylogeny(aln):
     ## write alignment to a temporary file.
@@ -209,14 +220,75 @@ def AlignmentToPhylogeny(aln):
     tree = Phylo.read("temp/RAxML_bestTree.test", "newick")
     return tree
 
-def GenotypeTree(phy, conf):
-    ''' takes a Biopython Tree object. returns a tree of genotypes, mutations
-    are approximately represented uniquely.'''
-    print phy
-    for node in phy.find_clades():
-        print node
+## from Biopython Phylo cookbook for looking up a Clade's parent.
+def all_parents(tree):
+    parents = {}
+    for clade in tree.find_clades(order='level'):
+        for child in clade:
+            parents[child] = clade
+    return parents
+
+## hand-rolled postorder traversal order for the genotype tree (for Sankoff cost assignment)
+## the code does not assume that we are dealing with a strictly binary tree.
+def postorder_gtree(gtree,cur=0,stack=[]):
+    ## if the cur node is not terminal, recur on children.
+    if len(gtree[cur]['children']):
+        stack_of_stacks = []
+        for c in range(len(gtree[cur]['children'])):
+            stack_of_stacks.append(postorder_gtree(gtree, gtree[cur]['children'][c],stack))
+        return reduce(lambda x, y:x+y, stack_of_stacks) + [cur]
+    else:
+        return [cur]
     
-    return None
+## implementation of the Sankoff algorithm.
+## assigns genotypes to internal nodes of the tree, and counts minimum mutations in tree.
+def Sankoff(gtree):
+    ## in future, might allow gap character state in alphabet, or other states
+    ## representing different kinds of mutations. 
+    alphabet = ['A','C','G','T']
+    alnlen = len(gtree[postorder_gtree(gtree)[0]]['genotype'])
+    for i in postorder_gtree(gtree):
+        if not len(gtree[i]['children']): # is a leaf
+            gtree[i]['cost'] = [{l:float("inf") for l in alphabet} for x in range(alnlen)]
+            for index,letter in enumerate(gtree[i]['genotype']):
+                gtree[i]['cost'][index][letter] = 0
+        else: # is an internal node.
+           gtree[i]['cost'] = [{l:0 for l in alphabet} for x in range(alnlen)]         
+           for c in gtree[i]['children']:
+               for x in range(alnlen):
+                   child_cost_dict = gtree[c]['cost'][x]
+                   best_child_state = min(child_cost_dict,key=child_cost_dict.get)
+                   best_child_cost = child_cost_dict[best_child_state]
+                   for l in alphabet: ## This is the fitch recurrence relation:
+                       state_child_cost = child_cost_dict[l]
+                       gtree[i]['cost'][x][l] += min(best_child_cost+1,state_child_cost)
+    ## nodes are already in preorder, which is nice for backtracking.
+    for i in gtree:
+        if len(gtree[i]['genotype']) == 0: ## assign the genotype to the internal node.
+            gtree[i]['genotype'] = ''.join([min(x,key=x.get) for x in gtree[i]['cost']])
+    return gtree
+
+def SankoffGenotypeTree(phy, aln, conf):
+    ''' takes a Biopython Tree object and alignment. returns a tree of genotypes, with mutations
+        stored in the internal nodes, using the Sankoff algorithm.
+        This implementation uses a dict to represent a node, rather than a class.'''
+    ## Walk down the Biopython Tree, and initialize the genotype tree.
+    genotype_tree = {}
+    clade_dict = {}
+    parent = all_parents(phy)
+    for i,clade in enumerate(phy.find_clades(order='preorder')):
+        clade_dict[clade] = i
+        if clade.is_terminal():
+            ## assign genotype to the leaf.
+            my_genotype = [rec for rec in aln if rec.id == clade.name][0].seq
+            genotype_tree[i] = {'children':[], 'genotype':my_genotype, 'name':clade.name}
+        else:
+            genotype_tree[i] = {'children':[], 'genotype':''}
+        if i > 0: # if not root, add current node as a child.
+            parent_index = clade_dict[parent[clade]]
+            genotype_tree[parent_index]['children'].append(i)
+    ## Now, run the Sankoff algorithm on the tree with labeled leaves.
+    return Sankoff(genotype_tree)
 
 def BasicSNPCount(conf):
     ''' return the total number of nonsynonymous SNPs in genes, 
@@ -253,13 +325,13 @@ def formGenomeCDF(ref_record, loci):
             cdf.append(p+cdf[-1])
     return (genes, cdf)
         
-def Statisticulate(conf, snptotal, star=True, reps=1000):
-    ''' rewrite when the genotype tree has been made correctly'''
-
+def Statisticulate(conf, snptotal, tree_and_annotation=None, reps=1000):
+    ''' Calculates statistics of parallel evolution given where mutations occurred. 
+    right now, works only for nonsynonymous mutations. '''
+    ref_record = utils.parse_genbank(conf.REF_GENOME)
     ######## count nonsynonymous mutations in each gene in the gd files.
-    if star:
+    if tree_and_annotation is None: # default: assume star phylogeny.
         nonsynonymous_mutations = {}
-        ref_record = utils.parse_genbank(conf.REF_GENOME)
         for gd_file in conf.GENOMEDIFF_FILES:
             gd_dict = parse_genomediff(gd_file, ref_record)
             for mut_id, gd in gd_dict.iteritems():
@@ -270,9 +342,22 @@ def Statisticulate(conf, snptotal, star=True, reps=1000):
                     if locus_tag not in nonsynonymous_mutations:
                         nonsynonymous_mutations[locus_tag] = 1
                     else:
-                        nonsynonymous_mutations[locus_tag] = nonsynonymous_mutations[locus_tag] + 1
-    else:
-        pass ## if not a star phylogeny, use a tree.
+                        nonsynonymous_mutations[locus_tag] += 1
+    else:  # a tree and annotation of mutation is provided.
+        gtree, col_annotation = tree_and_annotation
+        assert gtree is not None
+        assert col_annotation is not None
+        nonsynonymous_mutations = {}
+        ## the root of gtree contains information about independent mutations.
+        ## the cost at position X at the root is the number of independent mutations
+        ## at position X (based on the given phylogeny).
+        mut_counts = [min(x.values()) for x in gtree[0]['cost']]
+        for i, mut_tuple in enumerate(col_annotation):
+            column, pos, locus_tag = mut_tuple
+            if locus_tag not in nonsynonymous_mutations:
+                nonsynonymous_mutations[locus_tag] = mut_counts[i]
+            else:
+                nonsynonymous_mutations[locus_tag] += mut_counts[i]
 
     ## How many times does a dN occur in the gene?
     pval_numerator = {k:0 for k in nonsynonymous_mutations}
