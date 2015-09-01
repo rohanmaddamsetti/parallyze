@@ -124,6 +124,8 @@ def snpcount(genomediffs, lines, snp_types):
     of SNP mutations - to and from base'''
 
     file_matrices = {}
+    snp_type_counts = {snp_types}
+    print snp_type_counts
     for line in lines:
         file_matrices[line] = np.zeros((4, 4), dtype=int)
 
@@ -134,11 +136,14 @@ def snpcount(genomediffs, lines, snp_types):
             line = gd.line
             file_matrices[line][old_base, new_base] += 1
 
+            # do i need to set each snp type count to 0?
+            snp_type_counts[gd.snp_type] += 1
+
     for line, mat in file_matrices.iteritems():
         print 'file:', line
         print 'from (row) / to (column) :', '\n', mat, '\n'
 
-    return file_matrices
+    return file_matrices, snp_type_counts  # updated to old procs?
 
 
 # NOTE: Updated for refactor

@@ -114,7 +114,7 @@ def simulationEJB(conf, args):  # old proc2
     out_fn = fileName(args)
     # snp_total = BasicSNPCount(conf)  # just return the # of dN in genes.
     # print snp_total
-    snp_totalEJB = snpcount(genomediffs, lines, snp_types)
+    snp_totalEJB, snp_type_counts = snpcount(genomediffs, lines, snp_types)
 
 def proc3(conf, args):
 
@@ -199,7 +199,10 @@ def analyticalEJB(conf, args):  # old proc5
 def mutationTally(conf, args):  # old proc6
     '''number of lines mutating in this particular gene'''
     record = utils.parse_genbank(conf.REF_GENOME)
-    # utils.print_genbank_summary(record)
+
+    # 4327 CDS, 4397 gene
+    # feature types: 'rRNA', 'repeat_region', 'tRNA', 'source', 'misc_feature', 'CDS', 'gene'
+    # snpcounttotal, snptypetotals = snpcount(  # shouldn't do here. do above.
     # out_fn = None
 
     out_fn = fileName(args)
@@ -209,7 +212,7 @@ def mutationTally(conf, args):  # old proc6
         parse_genomediff(gd_file, record, genomediffs=genomediffs)
     print '\n'
 
-    counts = mutated_lines_per_gene(genomediffs, conf.snp_types)
+    counts = mutated_lines_per_gene(genomediffs, conf.snp_types)  # a dict
 
     with open(out_fn, 'wb') as fp:
         for tag, data in counts:
