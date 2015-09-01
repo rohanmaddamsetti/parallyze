@@ -103,6 +103,9 @@ def simulationRM(conf, args):  # old proc1
 
     New Procedure 3: replicate the analysis in Lieberman 2011.
 
+    Note: right now this procedure does not re-root the tree to make REL606 the root as is 
+          needed if analyzing real experimental evolution data.
+
 '''
 
 
@@ -119,20 +122,20 @@ def simulationEJB(conf, args):  # old proc2
 def proc3(conf, args):
 
     print "IN PROC 3"
-    # aln = SNPsToAlignment(conf)
-    # phy = AlignmentToPhylogeny(aln) # phylogeny is a tree object.
+    aln, col_annotation = SNPsToAlignment(conf)
 
-    # # This line is just for testing purposes.
+    ## This line calls RAxML to estimate the phylogeny.
+    #phy = AlignmentToPhylogeny(aln) # phylogeny is a tree object.
+    ##This line is just for testing purposes (to avoid re-estimating the tree).
     phy = Phylo.read("temp/RAxML_bestTree.test", "newick")
-    # # 3) from the Phylogeny,
-    gtree = GenotypeTree(phy, conf)
-    # # count independent mutations in gtree.
-    # snp_total = BasicSNPCount(conf) ## just return the number of dN in genes.
-    # # calculate statistics of parallel evolution.
-    # # This function need to be rewritten to use GenotypeTree.
-    # Statisticulate(conf, snp_total,star=False,reps=1000)
+    
+    ## from the Phylogeny,
+    gtree = SankoffGenotypeTree(phy, aln, conf)
+    ## count independent mutations in gtree (root should always be 0).
+    mut_total = sum([min(x.values()) for x in gtree[0]['cost']])
 
-    # cleanup()  # delete temp folder, doesn't work right now.
+    ## calculate statistics of parallel evolution.
+    Statisticulate(conf, mut_total,tree_and_annotation=(gtree,col_annotation),reps=1000)
 
 
 # NOTE: Updated to standards for refactor
