@@ -1,17 +1,18 @@
 def get_genecoordinates(record):
-    #input: record file from reference (i.e., ref as record file)
-    #get all IDed genes and their beginning and end position;
-    #store in list of tuples
+    # input: record file from reference (i.e., ref as record file)
+    # get all IDed genes and their beginning and end position;
+    # store in list of tuples
     geneinfo = []
     for i in record.features:
-        if i.type == 'CDS': #or i[type] if dictionary - tab everything below
-        #add non-CDS records later? (tRNA, lonely 'gene', repeat_region, misc_feature
+        if i.type == 'CDS':  # or i[type] if dictionary - tab everything below
+            # add non-CDS records later? (tRNA, lonely 'gene', repeat_region,
+            # misc_feature
             my_start = int(i.location.start)
             my_end = int(i.location.end)
             locus_tag = i.qualifiers['locus_tag'][0]
             try:
-                 gene_name = i.qualifiers['gene'][0]
-            except KeyError: 
+                gene_name = i.qualifiers['gene'][0]
+            except KeyError:
                 gene_name = 'none'
             mytuple = (my_start, my_end, gene_name, locus_tag)
             geneinfo.append(mytuple)
@@ -20,9 +21,10 @@ def get_genecoordinates(record):
 
 #####################
 
+
 def gds_gene_rank(filenames, params):
-    #input: mutations, from parse_gdfiles
-    #given user input #x, list x most mutated genes across all gdfiles
+    # input: mutations, from parse_gdfiles
+    # given user input #x, list x most mutated genes across all gdfiles
     #(#muts/gene across all lines)
     mut_genes = {}
     rank_mut_types = ['nonsynonymous']
@@ -34,7 +36,7 @@ def gds_gene_rank(filenames, params):
         rank_mut_types.append('pseudogene')
     if params['intergenic'] == 1:
         rank_mut_types.append('intergenic')
-    for fname in filenames: 
+    for fname in filenames:
         for mut in filenames[fname]:
             if mut['mut_type'] == 'SNP' and mut['snp_type'] in rank_mut_types:
                 for tag in mut['locus_tag']:
@@ -43,9 +45,10 @@ def gds_gene_rank(filenames, params):
     return mut_genes
     #sorted_mut_genes = sorted(mut_genes.iteritems(), key=operator.itemgetter(1), reverse = True)
     #mut_genes_number = int(len(sorted_mut_genes))
-    #print 'The', params['number_of_top_genes'], 'most mutated genes of all', mut_genes_number, 'mutated genes:'
-    #print sorted_mut_genes[:params['number_of_top_genes']]
-    #return sorted_mut_genes
-    ##diff btwn intergenic and noncoding (has no new base)? pseudogene? all exclusive?
+    # print 'The', params['number_of_top_genes'], 'most mutated genes of all', mut_genes_number, 'mutated genes:'
+    # print sorted_mut_genes[:params['number_of_top_genes']]
+    # return sorted_mut_genes
+    # diff btwn intergenic and noncoding (has no new base)? pseudogene? all
+    # exclusive?
 
 ####################

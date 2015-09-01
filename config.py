@@ -12,14 +12,15 @@ by Camille Scott
 Defines a simple config file parsing class.
 
 '''
-#note for CSE801: I don't fully understand how this all works
+
 
 def coroutine(func):
-    def start(*args,**kwargs):
-        cr = func(*args,**kwargs)
+    def start(*args, **kwargs):
+        cr = func(*args, **kwargs)
         cr.next()
         return cr
     return start
+
 
 class SimpleConfig(object):
 
@@ -27,11 +28,11 @@ class SimpleConfig(object):
         self.key_types = key_types
         self.fn = fn
         self.parse()
-    
+
     def parse(self):
-        
+
         parser = SimpleConfig.parse_protocol(
-                key_types=self.key_types, target=self.parser_receiver())
+            key_types=self.key_types, target=self.parser_receiver())
         with open(self.fn, 'rb') as fp:
             for line in fp:
                 if not line.startswith('#'):
@@ -48,14 +49,14 @@ class SimpleConfig(object):
 
         while True:
             symbol = (yield)
-            if symbol in key_types or symbol == None:
+            if symbol in key_types or symbol is None:
                 if value:
-                    target.send((key,value))
+                    target.send((key, value))
                     value = []
                 key = symbol
             elif key:
                 value.append(symbol)
-    
+
     @coroutine
     def parser_receiver(self):
 
@@ -63,11 +64,11 @@ class SimpleConfig(object):
             key, value = (yield)
             value = self.convert_value(key, value)
 
-            print '{k} : {v}'.format(k=key, v='\n'.join(value) \
-                                    if type(value)==list else value)
-            
+            print '{k} : {v}'.format(k=key, v='\n'.join(value)
+                                     if isinstance(value, list) else value)
+
             setattr(self, key, value)
-            
+
     def convert_value(self, key, value):
         ret = []
         for v in value:

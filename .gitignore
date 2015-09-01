@@ -1,4 +1,6 @@
+.DS_Store
 *.pyc
 *.csv
 *.sw{p,i,o}
-.DS_Store
+*.ipynb_checkpoints/
+*.tsv
